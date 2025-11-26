@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>University of Phuckery - Degree Customizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: Helvetica, Arial, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+  <div class="max-w-[1800px] mx-auto">
+    <h1 class="text-2xl md:text-4xl font-bold text-center mb-2 text-slate-800">University of Phuckery</h1>
+    <p class="text-center text-sm md:text-base text-slate-600 mb-8">Customize Your Prestigious Degree</p>
+    
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+      <!-- Form Section -->
+      <div class="w-full lg:w-[420px] flex-shrink-0 bg-white rounded-lg shadow-lg p-4 md:p-6 lg:sticky lg:top-4">
+        <h2 class="text-lg md:text-xl font-bold mb-3 md:mb-4 text-slate-800">Degree Details</h2>
+        
+        <div class="space-y-2 md:space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">First Name</label>
+              <input type="text" id="firstName" value="Your Name" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent" placeholder="First name">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Last Name</label>
+              <input type="text" id="lastName" value="Here" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent" placeholder="Last name">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Degree Level</label>
+              <select id="degreeLevel" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent bg-white">
+                <option value="Bachelor">Bachelor</option>
+                <option value="Master" selected>Master</option>
+                <option value="PhD">PhD</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Faculty</label>
+              <select id="faculty" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent bg-white">
+                <option value="Petty">Petty</option>
+                <option value="Minding Your Own Business">Minding Your Own Business</option>
+                <option value="Common Sense">Common Sense</option>
+                <option value="Not Giving a F*ck">Not Giving a F*ck</option>
+                <option value="Sarcasm">Sarcasm</option>
+                <option value="Adulting">Adulting</option>
+                <option value="Procrastination">Procrastination</option>
+                <option value="Overthinking">Overthinking</option>
+                <option value="Social Media Stalking">Social Media Stalking</option>
+                <option value="Netflix Binging">Netflix Binging</option>
+                <option value="Online Shopping">Online Shopping</option>
+                <option value="Napping">Napping</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">Achievement Description</label>
+            <textarea id="achievement" rows="2" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent resize-none" placeholder="Why did they earn this degree?">exemplary performance in the art of subtle comebacks and graceful revenge</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">Award Date</label>
+            <input type="text" id="awardDate" value="June 9th, 2019" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-slate-400 focus:border-transparent" placeholder="e.g., June 9th, 2025">
+          </div>
+
+          <div class="pt-2 border-t border-slate-200">
+            <label class="block text-xs font-medium text-slate-700 mb-2">What's Your Vibe?</label>
+            <div class="grid grid-cols-3 gap-1.5" id="styleButtons">
+              <button type="button" data-style="classic" class="style-btn active p-2 rounded border-2 text-xs font-medium transition-all border-slate-700 bg-slate-100 text-slate-900">
+                <div class="text-base mb-0.5">🎓</div>
+                <div class="text-[10px] leading-tight">Classic Academia</div>
+              </button>
+              <button type="button" data-style="bougie" class="style-btn p-2 rounded border-2 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50">
+                <div class="text-base mb-0.5">✨</div>
+                <div class="text-[10px] leading-tight">Bougie & Luxe</div>
+              </button>
+              <button type="button" data-style="legal" class="style-btn p-2 rounded border-2 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50">
+                <div class="text-base mb-0.5">⚖️</div>
+                <div class="text-[10px] leading-tight">Law School</div>
+              </button>
+              <button type="button" data-style="medical" class="style-btn p-2 rounded border-2 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50">
+                <div class="text-base mb-0.5">🏥</div>
+                <div class="text-[10px] leading-tight">Medical Professional</div>
+              </button>
+              <button type="button" data-style="graffiti" class="style-btn p-2 rounded border-2 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50">
+                <div class="text-base mb-0.5">🎨</div>
+                <div class="text-[10px] leading-tight">Street Art</div>
+              </button>
+              <button type="button" data-style="tech" class="style-btn p-2 rounded border-2 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50">
+                <div class="text-base mb-0.5">💻</div>
+                <div class="text-[10px] leading-tight">Silicon Valley</div>
+              </button>
+            </div>
+          </div>
+
+          <button class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-4 text-sm rounded-lg transition-colors duration-200 mt-2">
+            Add to Cart & Purchase
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="w-full flex-grow bg-white rounded-lg shadow-lg p-4 md:p-6">
+        <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-slate-800">Live Preview</h2>
+        
+        <div class="w-full overflow-x-auto">
+          <div id="certificate" class="relative shadow-2xl bg-amber-50" style="width:1100px;height:850px;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,69,19,0.03) 2px,rgba(139,69,19,0.03) 4px);border:24px solid;border-image:linear-gradient(45deg,#1e293b 0%,#475569 25%,#64748b 50%,#475569 75%,#1e293b 100%) 24;box-shadow:inset 0 0 30px rgba(0,0,0,0.1);transform:scale(0.45);transform-origin:top left;margin-bottom:-465px;">
+            
+            <!-- Watermark -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:180px;font-weight:bold;color:rgba(0,0,0,0.08);text-transform:uppercase;letter-spacing:20px;pointer-events:none;z-index:100;user-select:none;font-family:Arial Black,sans-serif;">PREVIEW</div>
+            
+            <!-- Decorative borders -->
+            <div class="absolute" style="inset:12px;border:4px double #475569;box-shadow:0 0 0 1px #94a3b8;"></div>
+            <div class="absolute" style="inset:20px;border:2px solid #64748b;"></div>
+            <div class="absolute" style="inset:24px;border:1px solid #94a3b8;"></div>
+            
+            <!-- Corner decorations -->
+            <div class="absolute" style="top:4px;left:4px;width:80px;height:80px;background:radial-gradient(circle at top left,rgba(71,85,105,0.4) 0%,transparent 70%);border-left:3px solid #475569;border-top:3px solid #475569;"></div>
+            <div class="absolute" style="top:4px;right:4px;width:80px;height:80px;background:radial-gradient(circle at top right,rgba(71,85,105,0.4) 0%,transparent 70%);border-right:3px solid #475569;border-top:3px solid #475569;"></div>
+            <div class="absolute" style="bottom:4px;left:4px;width:80px;height:80px;background:radial-gradient(circle at bottom left,rgba(71,85,105,0.4) 0%,transparent 70%);border-left:3px solid #475569;border-bottom:3px solid #475569;"></div>
+            <div class="absolute" style="bottom:4px;right:4px;width:80px;height:80px;background:radial-gradient(circle at bottom right,rgba(71,85,105,0.4) 0%,transparent 70%);border-right:3px solid #475569;border-bottom:3px solid #475569;"></div>
+            
+            <!-- Inner filigree -->
+            <div class="absolute" style="top:32px;left:32px;width:48px;height:48px;border-left:2px solid rgba(146,64,14,0.3);border-top:2px solid rgba(146,64,14,0.3);"></div>
+            <div class="absolute" style="top:32px;right:32px;width:48px;height:48px;border-right:2px solid rgba(146,64,14,0.3);border-top:2px solid rgba(146,64,14,0.3);"></div>
+            <div class="absolute" style="bottom:32px;left:32px;width:48px;height:48px;border-left:2px solid rgba(146,64,14,0.3);border-bottom:2px solid rgba(146,64,14,0.3);"></div>
+            <div class="absolute" style="bottom:32px;right:32px;width:48px;height:48px;border-right:2px solid rgba(146,64,14,0.3);border-bottom:2px solid rgba(146,64,14,0.3);"></div>
+
+            <!-- Certificate Content -->
+            <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;padding:60px 120px 50px;z-index:10;">
+              <div style="width:100%;margin-bottom:100px;">
+                <h1 id="certTitle" style="font-family:Luminari,fantasy,serif;font-weight:normal;letter-spacing:0.1em;font-size:52px;color:#1e293b;margin-bottom:20px;margin-top:20px;">University of Phuckery</h1>
+                
+                <div id="certBody1" style="font-family:Baskerville,serif;letter-spacing:0.03em;font-size:14px;line-height:1.6;color:#1e293b;margin-bottom:25px;">
+                  By Authority of the Your School Name Here,<br>
+                  Upon recommendation of the faculty and approval of the<br>
+                  Board of Trustees and by virtue of the authority vested in them,<br>
+                  Hereby Bestows Upon
+                </div>
+
+                <h2 id="certName" style="font-family:Luminari,fantasy,serif;font-weight:normal;letter-spacing:0.05em;font-size:40px;color:#1e293b;margin:30px 0;">Your Name Here</h2>
+
+                <div id="certBody2" style="font-family:Baskerville,serif;letter-spacing:0.03em;font-size:14px;line-height:1.6;color:#1e293b;margin-bottom:20px;">
+                  In recognition of the meritorious fulfillment of the prescribed<br>
+                  requirements, the degree of:
+                </div>
+
+                <h3 id="certDegree" style="font-family:Luminari,fantasy,serif;font-weight:normal;letter-spacing:0.05em;font-size:32px;color:#1e293b;margin:25px 0;">Master of Petty</h3>
+
+                <p id="certAchievement" style="font-family:Baskerville,serif;letter-spacing:0.03em;font-size:13px;line-height:1.6;color:#1e293b;margin:20px auto 0;max-width:900px;">
+                  With all the Rights, Privileges and Honors as well as the Obligations<br>
+                  and Responsibilities thereunto appertaining. For exemplary performance in the art of subtle comebacks and graceful revenge.<br>
+                  Awarded on: June 9th, 2019
+                </p>
+              </div>
+
+              <!-- Signatures -->
+              <div style="position:absolute;bottom:50px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 120px;">
+                <div style="text-align:center;width:300px;">
+                  <div id="sig1" style="font-family:Brush Script MT,cursive;font-size:22px;color:#1e293b;margin-bottom:10px;">Vlad X</div>
+                  <div id="sigTitle1" style="font-family:Baskerville,serif;font-size:13px;border-top:1px solid #1e293b;padding-top:6px;display:inline-block;padding-left:20px;padding-right:20px;">Dean, Board of Trustees</div>
+                </div>
+                
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div id="seal" style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#eab308 0%,#fbbf24 50%,#f59e0b 100%);border:4px solid #a16207;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);position:relative;">
+                    <div style="position:absolute;top:4px;left:4px;right:4px;bottom:4px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);"></div>
+                    <div style="text-align:center;z-index:10;padding:0 10px;">
+                      <div id="sealText" style="color:#713f12;font-weight:bold;font-size:10px;line-height:1.3;letter-spacing:0.03em;">OFFICIAL</div>
+                      <div style="color:#713f12;font-weight:bold;font-size:10px;line-height:1.3;letter-spacing:0.03em;">SEAL OF</div>
+                      <div style="color:#713f12;font-weight:bold;font-size:11px;line-height:1.3;margin-top:2px;letter-spacing:0.03em;">EXCELLENCE</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="text-align:center;width:300px;">
+                  <div id="sig2" style="font-family:Brush Script MT,cursive;font-size:22px;color:#1e293b;margin-bottom:10px;">Eleni X</div>
+                  <div id="sigTitle2" style="font-family:Baskerville,serif;font-size:13px;border-top:1px solid #1e293b;padding-top:6px;display:inline-block;padding-left:20px;padding-right:20px;">Chancellor of the University</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-500 text-center mt-4">This is a preview only. Complete purchase to receive your diploma.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const styles = {
+      classic: {
+        bg: 'bg-amber-50',
+        bgStyle: 'background-color:#fffbeb;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,69,19,0.03) 2px,rgba(139,69,19,0.03) 4px);',
+        border: 'linear-gradient(45deg,#1e293b 0%,#475569 25%,#64748b 50%,#475569 75%,#1e293b 100%) 24',
+        titleFont: 'Luminari,fantasy,serif',
+        bodyFont: 'Baskerville,serif',
+        titleColor: '#1e293b',
+        bodyColor: '#1e293b',
+        sealGradient: 'linear-gradient(135deg,#eab308 0%,#fbbf24 50%,#f59e0b 100%)',
+        sealBorder: '#a16207',
+        sealText: '#713f12'
+      },
+      bougie: {
+        bg: 'bg-stone-50',
+        bgStyle: 'background:linear-gradient(to bottom right,#fafaf9,#f5f5f4,#fafaf9);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(120,113,108,0.02) 2px,rgba(120,113,108,0.02) 4px);',
+        border: 'linear-gradient(45deg,#78716c 0%,#a8a29e 25%,#d6d3d1 50%,#a8a29e 75%,#78716c 100%) 24',
+        titleFont: 'Didot,serif',
+        bodyFont: 'Garamond,serif',
+        titleColor: '#292524',
+        bodyColor: '#44403c',
+        sealGradient: 'linear-gradient(135deg,#78716c 0%,#a8a29e 50%,#d6d3d1 100%)',
+        sealBorder: '#57534e',
+        sealText: '#fafaf9'
+      },
+      legal: {
+        bg: 'bg-stone-50',
+        bgStyle: 'background-color:#fafaf9;background-image:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(28,25,23,0.015) 1px,rgba(28,25,23,0.015) 2px);',
+        border: 'linear-gradient(0deg,#1c1917 0%,#292524 50%,#1c1917 100%) 24',
+        titleFont: 'Times New Roman,serif',
+        bodyFont: 'Georgia,serif',
+        titleColor: '#1c1917',
+        bodyColor: '#292524',
+        sealGradient: 'linear-gradient(135deg,#292524 0%,#44403c 50%,#57534e 100%)',
+        sealBorder: '#1c1917',
+        sealText: '#fafaf9'
+      },
+      medical: {
+        bg: 'bg-white',
+        bgStyle: 'background-color:#ffffff;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(2,132,199,0.01) 2px,rgba(2,132,199,0.01) 4px);',
+        border: 'linear-gradient(45deg,#0c4a6e 0%,#0369a1 25%,#075985 50%,#0369a1 75%,#0c4a6e 100%) 24',
+        titleFont: 'Arial,sans-serif',
+        bodyFont: 'Helvetica,sans-serif',
+        titleColor: '#0c4a6e',
+        bodyColor: '#075985',
+        sealGradient: 'linear-gradient(135deg,#0369a1 0%,#0284c7 50%,#0ea5e9 100%)',
+        sealBorder: '#075985',
+        sealText: '#f0f9ff'
+      },
+      graffiti: {
+        bg: 'bg-zinc-100',
+        bgStyle: 'background:linear-gradient(to bottom right,#f4f4f5,#fafafa,#f5f5f4);',
+        border: 'linear-gradient(45deg,#18181b 0%,#27272a 25%,#3f3f46 50%,#27272a 75%,#18181b 100%) 24',
+        titleFont: 'Impact,fantasy',
+        bodyFont: 'Arial Black,sans-serif',
+        titleColor: '#18181b',
+        bodyColor: '#27272a',
+        sealGradient: 'linear-gradient(135deg,#3f3f46 0%,#52525b 50%,#71717a 100%)',
+        sealBorder: '#18181b',
+        sealText: '#fafafa'
+      },
+      tech: {
+        bg: 'bg-white',
+        bgStyle: 'background-color:#ffffff;background-image:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(100,116,139,0.03) 1px,rgba(100,116,139,0.03) 2px);',
+        border: 'linear-gradient(45deg,#334155 0%,#475569 25%,#64748b 50%,#475569 75%,#334155 100%) 24',
+        titleFont: 'SF Pro Display,-apple-system,sans-serif',
+        bodyFont: 'SF Pro Text,-apple-system,sans-serif',
+        titleColor: '#1e293b',
+        bodyColor: '#334155',
+        sealGradient: 'linear-gradient(135deg,#475569 0%,#64748b 50%,#94a3b8 100%)',
+        sealBorder: '#334155',
+        sealText: '#f8fafc'
+      }
+    };
+
+    let currentStyle = 'classic';
+
+    function getDegreeText() {
+      const level = document.getElementById('degreeLevel').value;
+      const faculty = document.getElementById('faculty').value;
+      if (level === 'Bachelor') return `Bachelor of ${faculty}`;
+      if (level === 'Master') return `Master of ${faculty}`;
+      return `PhD in ${faculty}`;
+    }
+
+    function updatePreview() {
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const achievement = document.getElementById('achievement').value;
+      const awardDate = document.getElementById('awardDate').value;
+      const style = styles[currentStyle];
+
+      document.getElementById('certName').textContent = `${firstName} ${lastName}`;
+      document.getElementById('certDegree').textContent = getDegreeText();
+      document.getElementById('certAchievement').innerHTML = `With all the Rights, Privileges and Honors as well as the Obligations<br>and Responsibilities thereunto appertaining. For ${achievement}.<br>Awarded on: ${awardDate}`;
+
+      // Update styles
+      const cert = document.getElementById('certificate');
+      cert.style.cssText = `width:1100px;height:850px;${style.bgStyle}border:24px solid;border-image:${style.border};box-shadow:inset 0 0 30px rgba(0,0,0,0.1);transform:scale(0.45);transform-origin:top left;margin-bottom:-465px;position:relative;`;
+
+      document.getElementById('certTitle').style.fontFamily = style.titleFont;
+      document.getElementById('certTitle').style.color = style.titleColor;
+      document.getElementById('certName').style.fontFamily = style.titleFont;
+      document.getElementById('certName').style.color = style.titleColor;
+      document.getElementById('certDegree').style.fontFamily = style.titleFont;
+      document.getElementById('certDegree').style.color = style.titleColor;
+      document.getElementById('certBody1').style.fontFamily = style.bodyFont;
+      document.getElementById('certBody1').style.color = style.bodyColor;
+      document.getElementById('certBody2').style.fontFamily = style.bodyFont;
+      document.getElementById('certBody2').style.color = style.bodyColor;
+      document.getElementById('certAchievement').style.fontFamily = style.bodyFont;
+      document.getElementById('certAchievement').style.color = style.bodyColor;
+      document.getElementById('sig1').style.color = style.titleColor;
+      document.getElementById('sig2').style.color = style.titleColor;
+      document.getElementById('sigTitle1').style.fontFamily = style.bodyFont;
+      document.getElementById('sigTitle1').style.borderColor = style.bodyColor;
+      document.getElementById('sigTitle2').style.fontFamily = style.bodyFont;
+      document.getElementById('sigTitle2').style.borderColor = style.bodyColor;
+      document.getElementById('seal').style.background = style.sealGradient;
+      document.getElementById('seal').style.borderColor = style.sealBorder;
+      document.querySelectorAll('#seal div div').forEach(el => el.style.color = style.sealText);
+    }
+
+    // Event listeners
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.style-btn').forEach(b => {
+          b.classList.remove('active', 'border-slate-700', 'bg-slate-100', 'text-slate-900');
+          b.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
+        });
+        this.classList.add('active', 'border-slate-700', 'bg-slate-100', 'text-slate-900');
+        this.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
+        currentStyle = this.dataset.style;
+        updatePreview();
+      });
+    });
+
+    // Initial update
+    updatePreview();
+  </script>
+</body>
+</html>
