@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>University of Phuckery - Degree Customizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+SC:wght@400;600;700&family=Dancing+Script:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Fredoka+One&family=Great+Vibes&family=Pacifico&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Tangerine:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -94,6 +96,36 @@
           </div>
 
           <div class="pt-3 border-t border-gray-200">
+            <label class="block text-xs font-semibold mb-2" style="color: #3A3C3E;">Choose Your Package</label>
+            <div class="space-y-2" id="priceTiers">
+              <label class="flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                <input type="radio" name="priceTier" value="digital" data-price="19.99" class="mr-3 accent-blue-600" checked>
+                <div class="flex-1">
+                  <div class="font-semibold text-sm" style="color: #3A3C3E;">Digital Download</div>
+                  <div class="text-xs text-gray-500">High-res PDF delivered via email</div>
+                </div>
+                <div class="font-bold text-blue-600">$19.99</div>
+              </label>
+              <label class="flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                <input type="radio" name="priceTier" value="printed" data-price="39.99" class="mr-3 accent-blue-600">
+                <div class="flex-1">
+                  <div class="font-semibold text-sm" style="color: #3A3C3E;">Printed Diploma</div>
+                  <div class="text-xs text-gray-500">Premium cardstock, shipped to you</div>
+                </div>
+                <div class="font-bold text-blue-600">$39.99</div>
+              </label>
+              <label class="flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                <input type="radio" name="priceTier" value="framed" data-price="79.99" class="mr-3 accent-blue-600">
+                <div class="flex-1">
+                  <div class="font-semibold text-sm" style="color: #3A3C3E;">Printed & Framed</div>
+                  <div class="text-xs text-gray-500">Ready to hang, museum-quality frame</div>
+                </div>
+                <div class="font-bold text-blue-600">$79.99</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-gray-200">
             <label class="block text-xs font-semibold mb-2" style="color: #3A3C3E;">What's Your Vibe?</label>
             <div class="grid grid-cols-3 gap-2" id="styleButtons">
               <button type="button" data-style="classic" class="style-btn active p-2.5 rounded-lg border-2 text-xs font-medium transition-all">
@@ -127,9 +159,10 @@
             </div>
           </div>
 
-          <button class="w-full font-bold py-3 px-4 text-sm rounded-lg transition-all duration-200 mt-3 text-white hover:opacity-90 shadow-lg" style="background: linear-gradient(135deg, #01538B 0%, #023a61 100%);">
-            Add to Cart & Purchase
+          <button id="checkoutBtn" class="w-full font-bold py-3 px-4 text-sm rounded-lg transition-all duration-200 mt-3 text-white hover:opacity-90 shadow-lg" style="background: linear-gradient(135deg, #01538B 0%, #023a61 100%);">
+            Purchase for $19.99
           </button>
+          <p id="checkoutError" class="text-red-500 text-xs mt-2 hidden"></p>
         </div>
       </div>
 
@@ -517,6 +550,140 @@
     });
 
     renderCertificate();
+
+    // ============================================
+    // STRIPE CHECKOUT CONFIGURATION
+    // ============================================
+    // Replace with your Stripe publishable key
+    const STRIPE_PUBLISHABLE_KEY = 'pk_test_XXXXXXXXXXXXXXXXXXXXXXXX';
+    
+    // Replace with your Stripe Price IDs (create these in Stripe Dashboard)
+    const PRICE_IDS = {
+      digital: 'price_XXXXXXXXXXXXXXXX',
+      printed: 'price_XXXXXXXXXXXXXXXX', 
+      framed: 'price_XXXXXXXXXXXXXXXX'
+    };
+
+    // Cloudinary config for image upload (using your existing account)
+    const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/ded9cb1wd/image/upload';
+    const CLOUDINARY_UPLOAD_PRESET = 'diploma_orders'; // Create an unsigned upload preset in Cloudinary
+
+    // Your success/cancel URLs
+    const SUCCESS_URL = 'https://yourdomain.com/thank-you?session_id={CHECKOUT_SESSION_ID}';
+    const CANCEL_URL = 'https://yourdomain.com/diploma-customizer';
+
+    // ============================================
+    // PRICE TIER HANDLING
+    // ============================================
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const tierInputs = document.querySelectorAll('input[name="priceTier"]');
+    
+    function updateButtonPrice() {
+      const selected = document.querySelector('input[name="priceTier"]:checked');
+      const price = selected.dataset.price;
+      checkoutBtn.textContent = `Purchase for ${price}`;
+    }
+
+    tierInputs.forEach(input => {
+      input.addEventListener('change', updateButtonPrice);
+    });
+
+    // ============================================
+    // CERTIFICATE IMAGE CAPTURE
+    // ============================================
+    async function captureCertificate() {
+      const certEl = document.getElementById('certificate');
+      // Reset transform for full-resolution capture
+      const origTransform = certEl.style.transform;
+      const origMargin = certEl.style.marginBottom;
+      certEl.style.transform = 'none';
+      certEl.style.marginBottom = '0';
+      
+      const canvas = await html2canvas(certEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      });
+      
+      // Restore preview styling
+      certEl.style.transform = origTransform;
+      certEl.style.marginBottom = origMargin;
+      
+      return canvas.toDataURL('image/png');
+    }
+
+    async function uploadToCloudinary(base64Image) {
+      const formData = new FormData();
+      formData.append('file', base64Image);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'diploma-orders');
+      
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      return data.secure_url;
+    }
+
+    // ============================================
+    // STRIPE CHECKOUT
+    // ============================================
+    async function handleCheckout() {
+      const errorEl = document.getElementById('checkoutError');
+      errorEl.classList.add('hidden');
+      
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = 'Processing...';
+      
+      try {
+        // Gather order details
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const degree = getDegreeText();
+        const achievement = getAchievement();
+        const awardDate = document.getElementById('awardDate').value;
+        const style = currentStyle;
+        const tier = document.querySelector('input[name="priceTier"]:checked').value;
+        
+        // Capture and upload certificate image
+        checkoutBtn.textContent = 'Generating certificate...';
+        const imageData = await captureCertificate();
+        
+        checkoutBtn.textContent = 'Uploading...';
+        const imageUrl = await uploadToCloudinary(imageData);
+        
+        // Initialize Stripe
+        const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        
+        // Redirect to Checkout
+        // NOTE: For client-only mode, you need to use Stripe Payment Links or
+        // create a Checkout Session via your backend. See setup instructions below.
+        const { error } = await stripe.redirectToCheckout({
+          lineItems: [{ price: PRICE_IDS[tier], quantity: 1 }],
+          mode: 'payment',
+          successUrl: SUCCESS_URL,
+          cancelUrl: CANCEL_URL,
+          clientReferenceId: `${firstName}_${lastName}_${Date.now()}`,
+          // Metadata is passed via the session (requires backend)
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+      } catch (err) {
+        console.error('Checkout error:', err);
+        errorEl.textContent = err.message || 'Something went wrong. Please try again.';
+        errorEl.classList.remove('hidden');
+        updateButtonPrice();
+        checkoutBtn.disabled = false;
+      }
+    }
+
+    checkoutBtn.addEventListener('click', handleCheckout);
   </script>
 </body>
 </html>
