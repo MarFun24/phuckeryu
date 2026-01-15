@@ -5,13 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>University of Phuckery - Degree Customizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+SC:wght@400;600;700&family=Dancing+Script:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Fredoka+One&family=Great+Vibes&family=Pacifico&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Tangerine:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { font-family: Helvetica, Arial, sans-serif; }
+    * { font-family: 'Inter', Helvetica, Arial, sans-serif; }
     .style-btn.active { background: #01538B !important; color: white !important; border-color: #01538B !important; }
+    
+    /* Preview States */
+    .preview-container {
+      aspect-ratio: 1000 / 775;
+      background: #f3f4f6;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-placeholder {
+      text-align: center;
+      padding: 40px;
+    }
+    .preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #01538B;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Preview Button States */
+    .preview-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .preview-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .preview-btn.loading .btn-text {
+      visibility: hidden;
+    }
+    .preview-btn.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    /* Dirty State Indicator */
+    .form-dirty .preview-stale-badge {
+      display: flex;
+    }
+    .preview-stale-badge {
+      display: none;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #f59e0b;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+    }
     
     /* Mock Stripe Checkout Styles */
     .stripe-modal-overlay {
@@ -62,9 +142,6 @@
       border-color: #635bff;
       box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
     }
-    .stripe-input::placeholder {
-      color: #9ca3af;
-    }
     .stripe-btn {
       width: 100%;
       padding: 14px;
@@ -84,10 +161,6 @@
       background: #a5b4fc;
       cursor: not-allowed;
     }
-    .stripe-btn.processing {
-      position: relative;
-      color: transparent;
-    }
     .stripe-btn.processing::after {
       content: '';
       position: absolute;
@@ -102,12 +175,7 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .card-element {
-      position: relative;
-    }
+    .card-element { position: relative; }
     .card-icons {
       position: absolute;
       right: 12px;
@@ -128,12 +196,7 @@
       font-weight: bold;
       color: #6b7280;
     }
-    
-    /* Success State */
-    .success-state {
-      text-align: center;
-      padding: 40px 24px;
-    }
+    .success-state { text-align: center; padding: 40px 24px; }
     .success-checkmark {
       width: 80px;
       height: 80px;
@@ -150,13 +213,6 @@
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
     }
-    .success-checkmark svg {
-      width: 40px;
-      height: 40px;
-      color: white;
-    }
-    
-    /* Demo Banner */
     .demo-banner {
       background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
       border: 2px dashed #f59e0b;
@@ -194,25 +250,26 @@
   <div class="max-w-[1800px] mx-auto p-4 md:p-8">
     <div class="flex flex-col lg:flex-row gap-6 items-start">
       
+      <!-- LEFT PANEL: Form Controls -->
       <div class="w-full lg:w-[420px] flex-shrink-0 bg-white rounded-xl shadow-xl p-5 md:p-6 lg:sticky lg:top-4 border border-gray-100">
         <h2 class="text-lg md:text-xl font-bold mb-4" style="color: #3A3C3E;">Degree Details</h2>
         
-        <div class="space-y-3">
+        <div class="space-y-3" id="diplomaForm">
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">First Name</label>
-              <input type="text" id="firstName" value="Your Name" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
+              <input type="text" id="firstName" value="Your Name" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
             </div>
             <div>
               <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Last Name</label>
-              <input type="text" id="lastName" value="Here" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
+              <input type="text" id="lastName" value="Here" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Degree Level</label>
-              <select id="degreeLevel" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white">
+              <select id="degreeLevel" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white">
                 <option value="Bachelor">Bachelor</option>
                 <option value="Master" selected>Master</option>
                 <option value="PhD">PhD</option>
@@ -220,7 +277,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Faculty</label>
-              <select id="faculty" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white">
+              <select id="faculty" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white">
                 <option value="Petty">Petty</option>
                 <option value="Minding Your Own Business">Minding Your Own Business</option>
                 <option value="Common Sense">Common Sense</option>
@@ -239,7 +296,7 @@
 
           <div>
             <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Achievement Description</label>
-            <select id="achievementSelect" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white mb-2">
+            <select id="achievementSelect" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white mb-2">
               <option value="exemplary performance in the art of subtle comebacks and graceful revenge">🎯 Subtle comebacks & graceful revenge</option>
               <option value="mastering the ancient art of looking unbothered while internally screaming">😌 Looking unbothered while screaming inside</option>
               <option value="outstanding achievement in minding their own damn business">🙈 Minding their own damn business</option>
@@ -254,12 +311,7 @@
               <option value="perfecting the art of nodding thoughtfully while thinking about dinner">🍕 Thoughtful nodding (thinking about food)</option>
               <option value="custom">✏️ Write your own...</option>
             </select>
-            <textarea id="achievementCustom" rows="2" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none hidden" placeholder="Write your custom achievement..."></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Award Date</label>
-            <input type="text" id="awardDate" value="June 9th, 2019" class="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
+            <textarea id="achievementCustom" rows="2" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none hidden" placeholder="Write your custom achievement..."></textarea>
           </div>
 
           <div class="pt-3 border-t border-gray-200">
@@ -295,59 +347,102 @@
           <div class="pt-3 border-t border-gray-200">
             <label class="block text-xs font-semibold mb-2" style="color: #3A3C3E;">What's Your Vibe?</label>
             <div class="grid grid-cols-3 gap-2" id="styleButtons">
-              <button type="button" data-style="classic" class="style-btn active p-2.5 rounded-lg border-2 text-xs font-medium transition-all">
+              <button type="button" data-style="classic" data-page="1" class="style-btn active p-2.5 rounded-lg border-2 text-xs font-medium transition-all">
                 <div class="text-lg mb-1">🎓</div>
                 <div class="text-[10px] leading-tight">Classic Academia</div>
               </button>
-              <button type="button" data-style="boujie" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
+              <button type="button" data-style="boujie" data-page="2" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
                 <div class="text-lg mb-1">✨</div>
                 <div class="text-[10px] leading-tight">Boujie & Luxe</div>
               </button>
-              <button type="button" data-style="legal" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
+              <button type="button" data-style="legal" data-page="3" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
                 <div class="text-lg mb-1">⚖️</div>
                 <div class="text-[10px] leading-tight">Law School</div>
               </button>
-              <button type="button" data-style="medical" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
+              <button type="button" data-style="medical" data-page="4" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
                 <div class="text-lg mb-1">🏥</div>
                 <div class="text-[10px] leading-tight">Medical</div>
               </button>
-              <button type="button" data-style="creative" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
+              <button type="button" data-style="creative" data-page="5" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
                 <div class="text-lg mb-1">🎨</div>
                 <div class="text-[10px] leading-tight">Creatives</div>
               </button>
-              <button type="button" data-style="tech" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
+              <button type="button" data-style="tech" data-page="6" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all">
                 <div class="text-lg mb-1">🤖</div>
                 <div class="text-[10px] leading-tight">AI / Tech</div>
               </button>
-              <button type="button" data-style="kids" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all col-span-3">
+              <button type="button" data-style="kids" data-page="7" class="style-btn p-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-600 hover:border-gray-400 transition-all col-span-3">
                 <div class="text-lg mb-1">🦥</div>
                 <div class="text-[10px] leading-tight">Lil Phuckers (Digital Only)</div>
               </button>
             </div>
           </div>
 
-          <button id="checkoutBtn" class="w-full font-bold py-3 px-4 text-sm rounded-lg transition-all duration-200 mt-3 text-white hover:opacity-90 shadow-lg" style="background: linear-gradient(135deg, #01538B 0%, #023a61 100%);">
+          <!-- PREVIEW BUTTON -->
+          <button id="previewBtn" class="preview-btn w-full font-bold py-3 px-4 text-sm rounded-lg transition-all duration-200 mt-3 text-white hover:opacity-90 shadow-lg bg-gradient-to-r from-emerald-500 to-emerald-600">
+            <span class="btn-text">🔍 Generate Preview</span>
+          </button>
+          
+          <!-- PURCHASE BUTTON -->
+          <button id="checkoutBtn" class="w-full font-bold py-3 px-4 text-sm rounded-lg transition-all duration-200 text-white hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" style="background: linear-gradient(135deg, #01538B 0%, #023a61 100%);" disabled>
             Purchase for $19.99
           </button>
           <p id="checkoutError" class="text-red-500 text-xs mt-2 hidden"></p>
+          <p id="previewHint" class="text-gray-500 text-xs mt-2 text-center">Generate a preview before purchasing</p>
         </div>
       </div>
 
+      <!-- RIGHT PANEL: Preview Display -->
       <div class="w-full flex-grow bg-white rounded-xl shadow-xl p-5 md:p-6 border border-gray-100">
-        <h2 class="text-xl md:text-2xl font-bold mb-6" style="color: #3A3C3E;">Live Preview</h2>
+        <h2 class="text-xl md:text-2xl font-bold mb-6" style="color: #3A3C3E;">Preview</h2>
         
-        <div class="w-full overflow-x-auto pb-4">
-          <div id="certificate" style="width:1000px;height:775px;transform:scale(0.5);transform-origin:top left;margin-bottom:-387px;position:relative;"></div>
-          <p class="text-xs text-center mt-4" style="color:#3A3C3E;opacity:0.6;">This is a preview only. Complete purchase to receive your diploma.</p>
+        <div class="preview-container" id="previewContainer">
+          <!-- Stale badge (shown when form changes after preview) -->
+          <div class="preview-stale-badge">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Preview outdated - click to regenerate
+          </div>
+          
+          <!-- Empty State -->
+          <div class="preview-placeholder" id="previewEmpty">
+            <div class="text-6xl mb-4">🎓</div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Your diploma preview will appear here</h3>
+            <p class="text-sm text-gray-500">Fill in your details and click "Generate Preview"</p>
+          </div>
+          
+          <!-- Loading State -->
+          <div class="preview-placeholder hidden" id="previewLoading">
+            <div class="spinner mb-4"></div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Generating your diploma...</h3>
+            <p class="text-sm text-gray-500">This usually takes 2-5 seconds</p>
+          </div>
+          
+          <!-- Preview Image -->
+          <img id="previewImage" class="preview-image hidden" alt="Diploma Preview">
+          
+          <!-- Error State -->
+          <div class="preview-placeholder hidden" id="previewError">
+            <div class="text-6xl mb-4">😕</div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Something went wrong</h3>
+            <p class="text-sm text-gray-500 mb-4" id="previewErrorMessage">Please try again</p>
+            <button onclick="generatePreview()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+              Try Again
+            </button>
+          </div>
         </div>
+        
+        <p class="text-xs text-center mt-4" style="color:#3A3C3E;opacity:0.6;">
+          Preview generated from Canva. Final output will be high-resolution.
+        </p>
       </div>
     </div>
   </div>
 
-  <!-- Mock Stripe Checkout Modal -->
+  <!-- Mock Stripe Checkout Modal (unchanged) -->
   <div class="stripe-modal-overlay" id="stripeModal">
     <div class="stripe-checkout">
-      <!-- Checkout Form State -->
       <div id="checkoutFormState">
         <div class="stripe-header">
           <div class="flex items-center justify-between mb-4">
@@ -368,7 +463,6 @@
         </div>
         
         <div class="p-6">
-          <!-- Demo Banner -->
           <div class="demo-banner">
             <div class="demo-banner-icon">!</div>
             <div class="text-sm text-amber-800">
@@ -426,7 +520,6 @@
         </div>
       </div>
       
-      <!-- Success State -->
       <div id="successState" class="hidden">
         <div class="success-state">
           <div class="success-checkmark">
@@ -445,11 +538,8 @@
             <strong class="text-gray-700">demo@example.com</strong>
           </div>
           
-          <button onclick="closeModal()" class="stripe-btn">
-            Done
-          </button>
+          <button onclick="closeModal()" class="stripe-btn">Done</button>
           
-          <!-- Demo reminder -->
           <div class="demo-banner mt-4">
             <div class="demo-banner-icon">!</div>
             <div class="text-sm text-amber-800">
@@ -462,401 +552,280 @@
   </div>
 
   <script>
-    let currentStyle = 'classic';
-    const sealImg = 'https://res.cloudinary.com/ded9cb1wd/image/upload/v1767813427/PU_Logo_Blue_White_rwkqvn.png';
-
-    // Google Fonts - professional web fonts
-    const fonts = {
-      // Elegant serifs
-      cormorant: "'Cormorant Garamond', Georgia, serif",
-      playfair: "'Playfair Display', Georgia, serif",
-      ebGaramond: "'EB Garamond', Georgia, serif",
-      libreBaskerville: "'Libre Baskerville', Georgia, serif",
-      oldStandard: "'Old Standard TT', Georgia, serif",
+    // ===========================================
+    // CONFIGURATION
+    // ===========================================
+    const CONFIG = {
+      // Set to 'mock' for development, 'production' when Canva API is ready
+      MODE: 'mock', // 'mock' | 'production'
       
-      // Script/Calligraphy fonts
-      greatVibes: "'Great Vibes', cursive",
-      pinyonScript: "'Pinyon Script', cursive",
-      tangerine: "'Tangerine', cursive",
-      dancingScript: "'Dancing Script', cursive",
-      
-      // Display/Header fonts  
-      cinzel: "'Cinzel', Georgia, serif",
-      cormorantSC: "'Cormorant SC', Georgia, serif",
-      
-      // Fun fonts for kids
-      pacifico: "'Pacifico', cursive",
-      fredokaOne: "'Fredoka One', cursive",
-      bubblegum: "'Bubblegum Sans', cursive",
-      
-      // Medieval/Gothic fonts
-      unifraktur: "'UnifrakturMaguntia', cursive",
-      cinzelDeco: "'Cinzel Decorative', serif"
+      API_BASE_URL: '/api',
+      MASTER_TEMPLATE_ID: 'DAG-EMGuJqg',
     };
 
-    const achievementSelect = document.getElementById('achievementSelect');
-    const achievementCustom = document.getElementById('achievementCustom');
-    
-    achievementSelect.addEventListener('change', function() {
-      if (this.value === 'custom') {
-        achievementCustom.classList.remove('hidden');
-        achievementCustom.focus();
-      } else {
-        achievementCustom.classList.add('hidden');
-      }
-      renderCertificate();
-    });
-    
-    achievementCustom.addEventListener('input', renderCertificate);
+    // ===========================================
+    // STATE MANAGEMENT
+    // ===========================================
+    let state = {
+      currentStyle: 'classic',
+      currentPage: 1,
+      previewGenerated: false,
+      formDirty: false,
+      currentDesignCopyId: null, // Stores the ID of the user's design copy
+      isGenerating: false,
+    };
 
-    function getAchievement() {
-      if (achievementSelect.value === 'custom') {
-        return achievementCustom.value || 'being absolutely amazing';
-      }
-      return achievementSelect.value;
-    }
+    // ===========================================
+    // DOM ELEMENTS
+    // ===========================================
+    const elements = {
+      previewBtn: document.getElementById('previewBtn'),
+      checkoutBtn: document.getElementById('checkoutBtn'),
+      previewContainer: document.getElementById('previewContainer'),
+      previewEmpty: document.getElementById('previewEmpty'),
+      previewLoading: document.getElementById('previewLoading'),
+      previewImage: document.getElementById('previewImage'),
+      previewError: document.getElementById('previewError'),
+      previewErrorMessage: document.getElementById('previewErrorMessage'),
+      previewHint: document.getElementById('previewHint'),
+      achievementSelect: document.getElementById('achievementSelect'),
+      achievementCustom: document.getElementById('achievementCustom'),
+    };
 
-    function getDegreeText() {
-      const level = document.getElementById('degreeLevel').value;
+    // ===========================================
+    // FORM DATA HELPERS
+    // ===========================================
+    function getFormData() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const degreeLevel = document.getElementById('degreeLevel').value;
       const faculty = document.getElementById('faculty').value;
-      if (level === 'Bachelor') return `Bachelor of ${faculty}`;
-      if (level === 'Master') return `Master of ${faculty}`;
-      return `PhD in ${faculty}`;
-    }
-
-    function renderCertificate() {
-      const firstName = document.getElementById('firstName').value;
-      const lastName = document.getElementById('lastName').value;
-      const fullName = `${firstName} ${lastName}`;
-      const achievement = getAchievement();
-      const awardDate = document.getElementById('awardDate').value;
-      const degree = getDegreeText();
-      const container = document.getElementById('certificate');
-
-      const signaturesClassic = `
-        <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 100px;">
-          <div style="text-align:center;width:180px;">
-            <div style="font-family:${fonts.greatVibes};font-size:38px;color:#1a1a1a;">Vlad X</div>
-            <div style="width:100%;height:1px;background:#1a1a1a;margin:4px 0;"></div>
-            <div style="font-family:${fonts.cormorant};font-size:12px;color:#2a2a2a;letter-spacing:0.05em;">Dean</div>
-          </div>
-          
-          <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(145deg,#d4a229 0%,#c4922a 50%,#b8862a 100%);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(255,255,255,0.3),inset 0 -2px 4px rgba(0,0,0,0.2),0 4px 8px rgba(0,0,0,0.2);">
-            <img src="${sealImg}" style="width:80px;height:80px;object-fit:contain;" alt="Seal">
-          </div>
-          
-          <div style="text-align:center;width:180px;">
-            <div style="font-family:${fonts.greatVibes};font-size:38px;color:#1a1a1a;">Eleni X</div>
-            <div style="width:100%;height:1px;background:#1a1a1a;margin:4px 0;"></div>
-            <div style="font-family:${fonts.cormorant};font-size:12px;color:#2a2a2a;letter-spacing:0.05em;">Chancellor</div>
-          </div>
-        </div>`;
-
-      const signaturesBoujie = `
-        <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 100px;">
-          <div style="text-align:center;width:180px;">
-            <div style="font-family:${fonts.pinyonScript};font-size:42px;color:#8B6914;">Vlad X</div>
-            <div style="width:100%;height:1px;background:linear-gradient(90deg,transparent,#c9a227,transparent);margin:4px 0;"></div>
-            <div style="font-family:${fonts.cormorantSC};font-size:11px;color:#5a5a5a;letter-spacing:0.2em;">DEAN</div>
-          </div>
-          
-          <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(145deg,#d4af37 0%,#c9a227 50%,#b8962a 100%);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 6px rgba(255,255,255,0.4),inset 0 -2px 6px rgba(0,0,0,0.2),0 4px 12px rgba(201,162,39,0.3);">
-            <img src="${sealImg}" style="width:80px;height:80px;object-fit:contain;" alt="Seal">
-          </div>
-          
-          <div style="text-align:center;width:180px;">
-            <div style="font-family:${fonts.pinyonScript};font-size:42px;color:#8B6914;">Eleni X</div>
-            <div style="width:100%;height:1px;background:linear-gradient(90deg,transparent,#c9a227,transparent);margin:4px 0;"></div>
-            <div style="font-family:${fonts.cormorantSC};font-size:11px;color:#5a5a5a;letter-spacing:0.2em;">CHANCELLOR</div>
-          </div>
-        </div>`;
-
-      const signaturesKids = `
-        <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 80px;">
-          <div style="text-align:center;width:160px;">
-            <div style="font-family:${fonts.pacifico};font-size:24px;color:#db2777;">Vlad X</div>
-            <div style="width:100%;height:3px;background:linear-gradient(90deg,#f472b6,#a855f7);margin:4px 0;border-radius:2px;"></div>
-            <div style="font-family:${fonts.bubblegum};font-size:11px;color:#6b7280;">Dean</div>
-          </div>
-          
-          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(145deg,#fbbf24 0%,#f59e0b 50%,#d97706 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(251,191,36,0.4);">
-            <img src="${sealImg}" style="width:60px;height:60px;object-fit:contain;" alt="Seal">
-          </div>
-          
-          <div style="text-align:center;width:160px;">
-            <div style="font-family:${fonts.pacifico};font-size:24px;color:#2563eb;">Eleni X</div>
-            <div style="width:100%;height:3px;background:linear-gradient(90deg,#60a5fa,#34d399);margin:4px 0;border-radius:2px;"></div>
-            <div style="font-family:${fonts.bubblegum};font-size:11px;color:#6b7280;">Chancellor</div>
-          </div>
-        </div>`;
-
-      const templates = {
-        classic: `
-          <div style="width:100%;height:100%;background:#f8f6f0;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.dancingScript};font-size:100px;color:rgba(0,0,0,0.04);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:45px 80px 35px;">
-              
-              <div style="font-family:${fonts.playfair};font-size:52px;color:#1a1a1a;margin-bottom:20px;line-height:1;font-style:italic;">University of Phuckery</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;line-height:1.7;margin-bottom:6px;">
-                on the recommendation of the Faculty and in recognition of the<br>completion of the prescribed course in the
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:18px;color:#2a2a2a;margin-bottom:10px;">College of Life Sciences</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:12px;">has conferred upon</div>
-              
-              <div style="font-family:${fonts.cinzel};font-size:38px;color:#1a1a1a;margin:5px 0 12px;line-height:1;letter-spacing:0.08em;">${fullName.toUpperCase()}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:10px;">the degree of</div>
-              
-              <div style="font-family:${fonts.playfair};font-size:30px;color:#1a1a1a;margin-bottom:18px;line-height:1;font-weight:600;">${degree}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-size:13px;color:#2a2a2a;max-width:600px;line-height:1.6;margin-bottom:6px;">
-                in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto. In witness whereof this diploma has been signed by the duly authorized officers and sealed with its corporate seal.
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:14px;color:#2a2a2a;">Presented on ${awardDate}</div>
-              
-              <div style="flex-grow:1;min-height:20px;"></div>
-              ${signaturesClassic}
-            </div>
-          </div>`,
-
-        boujie: `
-          <div style="width:100%;height:100%;background:linear-gradient(180deg,#fffdf7 0%,#faf6eb 100%);position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;inset:18px;border:2px solid #c9a227;pointer-events:none;"></div>
-            <div style="position:absolute;inset:24px;border:1px solid rgba(201,162,39,0.4);pointer-events:none;"></div>
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.pinyonScript};font-size:100px;color:rgba(201,162,39,0.05);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:50px 90px 35px;">
-              
-              <div style="font-family:${fonts.tangerine};font-size:72px;color:#8B6914;margin-bottom:18px;line-height:1;font-weight:700;">University of Phuckery</div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-style:italic;font-size:14px;color:#5a5a5a;line-height:1.7;margin-bottom:5px;">
-                on the recommendation of the Faculty and in recognition of the<br>completion of the prescribed course in the
-              </div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-style:italic;font-size:17px;color:#3a3a3a;margin-bottom:8px;">College of Refined Arts</div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-style:italic;font-size:14px;color:#5a5a5a;margin-bottom:10px;">has conferred upon</div>
-              
-              <div style="font-family:${fonts.pinyonScript};font-size:54px;color:#1a1a1a;margin:5px 0 10px;line-height:1;">${fullName}</div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-style:italic;font-size:14px;color:#5a5a5a;margin-bottom:8px;">the degree of</div>
-              
-              <div style="font-family:${fonts.tangerine};font-size:42px;color:#8B6914;margin-bottom:16px;line-height:1;font-weight:700;">${degree}</div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-size:12px;color:#4a4a4a;max-width:560px;line-height:1.6;margin-bottom:5px;">
-                in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto. In witness whereof this diploma has been signed by the duly authorized officers and sealed with its corporate seal.
-              </div>
-              
-              <div style="font-family:${fonts.ebGaramond};font-style:italic;font-size:13px;color:#5a5a5a;">Presented on ${awardDate}</div>
-              
-              <div style="flex-grow:1;min-height:15px;"></div>
-              ${signaturesBoujie}
-            </div>
-          </div>`,
-
-        legal: `
-          <div style="width:100%;height:100%;background:#f8f6f0;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.dancingScript};font-size:100px;color:rgba(0,0,0,0.04);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:45px 80px 35px;">
-              
-              <div style="font-family:${fonts.libreBaskerville};font-size:48px;color:#1a1a1a;margin-bottom:20px;line-height:1;font-style:italic;">University of Phuckery</div>
-              
-              <div style="font-family:${fonts.oldStandard};font-style:italic;font-size:15px;color:#2a2a2a;line-height:1.7;margin-bottom:6px;">
-                on the recommendation of the Faculty and in recognition of the<br>completion of the prescribed course in the
-              </div>
-              
-              <div style="font-family:${fonts.oldStandard};font-style:italic;font-size:18px;color:#2a2a2a;margin-bottom:10px;">School of Law</div>
-              
-              <div style="font-family:${fonts.oldStandard};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:12px;">has conferred upon</div>
-              
-              <div style="font-family:${fonts.cinzel};font-size:36px;color:#1a1a1a;margin:5px 0 12px;line-height:1;letter-spacing:0.1em;font-weight:600;">${fullName.toUpperCase()}</div>
-              
-              <div style="font-family:${fonts.oldStandard};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:10px;">the degree of</div>
-              
-              <div style="font-family:${fonts.libreBaskerville};font-size:28px;color:#1a1a1a;margin-bottom:18px;line-height:1;font-weight:700;">${degree}</div>
-              
-              <div style="font-family:${fonts.oldStandard};font-size:13px;color:#2a2a2a;max-width:600px;line-height:1.6;margin-bottom:6px;">
-                in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto. In witness whereof this diploma has been signed by the duly authorized officers and sealed with its corporate seal.
-              </div>
-              
-              <div style="font-family:${fonts.oldStandard};font-style:italic;font-size:14px;color:#2a2a2a;">Presented on ${awardDate}</div>
-              
-              <div style="flex-grow:1;min-height:20px;"></div>
-              ${signaturesClassic}
-            </div>
-          </div>`,
-
-        medical: `
-          <div style="width:100%;height:100%;background:#f8f6f0;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.greatVibes};font-size:100px;color:rgba(0,0,0,0.04);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:45px 80px 35px;">
-              
-              <div style="font-family:${fonts.cormorantSC};font-size:15px;letter-spacing:0.25em;color:#1a1a1a;margin-bottom:8px;">THE</div>
-              <div style="font-family:${fonts.playfair};font-size:48px;color:#1a1a1a;margin-bottom:20px;line-height:1;font-style:italic;">University of Phuckery</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;line-height:1.7;margin-bottom:6px;">
-                on the recommendation of the Faculty and in recognition of the<br>completion of the prescribed course in the
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:18px;color:#2a2a2a;margin-bottom:10px;">School of Medicine</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:12px;">has conferred upon</div>
-              
-              <div style="font-family:${fonts.cinzel};font-size:36px;color:#1a1a1a;margin:5px 0 12px;line-height:1;letter-spacing:0.08em;">${fullName.toUpperCase()}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:10px;">the degree of</div>
-              
-              <div style="font-family:${fonts.playfair};font-size:28px;color:#1a1a1a;margin-bottom:18px;line-height:1;font-weight:600;">${degree}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-size:13px;color:#2a2a2a;max-width:600px;line-height:1.6;margin-bottom:6px;">
-                in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto. In witness whereof this diploma has been signed by the duly authorized officers and sealed with its corporate seal.
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:14px;color:#2a2a2a;">Presented on ${awardDate}</div>
-              
-              <div style="flex-grow:1;min-height:20px;"></div>
-              ${signaturesClassic}
-            </div>
-          </div>`,
-
-        creative: `
-          <div style="width:100%;height:100%;background:#f8f6f0;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.dancingScript};font-size:80px;color:rgba(0,0,0,0.04);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:45px 80px 35px;">
-              
-              <div style="font-family:${fonts.dancingScript};font-size:56px;color:#1a1a1a;margin-bottom:20px;line-height:1;font-weight:700;">University of Phuckery</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;line-height:1.7;margin-bottom:6px;">
-                on the recommendation of the Faculty and in recognition of the<br>completion of the prescribed course in the
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:18px;color:#2a2a2a;margin-bottom:10px;">School of Creative Arts</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:12px;">has conferred upon</div>
-              
-              <div style="font-family:${fonts.greatVibes};font-size:48px;color:#1a1a1a;margin:5px 0 12px;line-height:1;">${fullName}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:15px;color:#2a2a2a;margin-bottom:10px;">the degree of</div>
-              
-              <div style="font-family:${fonts.dancingScript};font-size:34px;color:#1a1a1a;margin-bottom:18px;line-height:1;font-weight:700;">${degree}</div>
-              
-              <div style="font-family:${fonts.cormorant};font-size:13px;color:#2a2a2a;max-width:600px;line-height:1.6;margin-bottom:6px;">
-                in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto. In witness whereof this diploma has been signed by the duly authorized officers and sealed with its corporate seal.
-              </div>
-              
-              <div style="font-family:${fonts.cormorant};font-style:italic;font-size:14px;color:#2a2a2a;">Presented on ${awardDate}</div>
-              
-              <div style="flex-grow:1;min-height:20px;"></div>
-              ${signaturesClassic}
-            </div>
-          </div>`,
-
-        tech: `
-          <div style="width:100%;height:100%;background:#f8f6f0;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;">
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:${fonts.oldStandard};font-size:90px;color:rgba(0,0,0,0.03);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:60px 80px 40px;">
-              
-              <!-- Decorative University Name with Medieval Red Initials -->
-              <div style="font-family:${fonts.oldStandard};font-size:36px;color:#1a1a1a;margin-bottom:28px;line-height:1;letter-spacing:0.02em;">
-                <span style="font-family:${fonts.unifraktur};color:#8B0000;font-size:54px;position:relative;top:4px;">U</span><span style="font-size:28px;letter-spacing:0.08em;">NIVERSITY</span> 
-                <span style="font-family:${fonts.unifraktur};color:#8B0000;font-size:54px;position:relative;top:4px;">O</span><span style="font-size:28px;letter-spacing:0.08em;">F</span> 
-                <span style="font-family:${fonts.unifraktur};color:#8B0000;font-size:54px;position:relative;top:4px;">P</span><span style="font-size:28px;letter-spacing:0.08em;">HUCKERY</span>
-              </div>
-              
-              <!-- Upon the recommendation text -->
-              <div style="font-family:${fonts.oldStandard};font-size:12px;color:#2a2a2a;letter-spacing:0.15em;line-height:1.8;margin-bottom:20px;">
-                UPON THE RECOMMENDATION OF THE FACULTY<br>HEREBY CONFERS ON
-              </div>
-              
-              <!-- Name in script -->
-              <div style="font-family:${fonts.greatVibes};font-size:52px;color:#1a1a1a;margin:10px 0 20px;line-height:1;">${fullName}</div>
-              
-              <!-- The degree of -->
-              <div style="font-family:${fonts.oldStandard};font-size:13px;color:#2a2a2a;letter-spacing:0.2em;margin-bottom:14px;">THE DEGREE OF</div>
-              
-              <!-- Degree name -->
-              <div style="font-family:${fonts.playfair};font-size:32px;color:#1a1a1a;margin-bottom:28px;line-height:1;font-style:italic;">${degree}</div>
-              
-              <!-- Recognition block - all caps, centered -->
-              <div style="font-family:${fonts.oldStandard};font-size:11px;color:#2a2a2a;max-width:580px;line-height:1.9;letter-spacing:0.08em;text-align:center;">
-                IN RECOGNITION OF ${achievement.toUpperCase()}, WITH ALL THE HONORS, RIGHTS AND PRIVILEGES BELONGING THERETO. GIVEN THIS DAY UNDER THE SEAL OF THE INSTITUTE IN THE COMMONWEALTH OF LIFE SCIENCES
-              </div>
-              
-              <div style="flex-grow:1;min-height:30px;"></div>
-              
-              <!-- MIT-style signatures with Dean/Chancellor -->
-              <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 80px;">
-                <div style="text-align:center;width:160px;">
-                  <div style="font-family:${fonts.greatVibes};font-size:32px;color:#1a1a1a;">Vlad X</div>
-                  <div style="width:100%;height:1px;background:#1a1a1a;margin:6px 0;"></div>
-                  <div style="font-family:${fonts.oldStandard};font-size:11px;color:#2a2a2a;font-style:italic;letter-spacing:0.05em;">Dean</div>
-                </div>
-                
-                <div style="width:90px;height:90px;border-radius:50%;border:3px solid #8B0000;display:flex;align-items:center;justify-content:center;opacity:0.85;">
-                  <img src="${sealImg}" style="width:70px;height:70px;object-fit:contain;filter:sepia(100%) saturate(300%) hue-rotate(-10deg);" alt="Seal">
-                </div>
-                
-                <div style="text-align:center;width:160px;">
-                  <div style="font-family:${fonts.greatVibes};font-size:32px;color:#1a1a1a;">Eleni X</div>
-                  <div style="width:100%;height:1px;background:#1a1a1a;margin:6px 0;"></div>
-                  <div style="font-family:${fonts.oldStandard};font-size:11px;color:#2a2a2a;font-style:italic;letter-spacing:0.05em;">Chancellor</div>
-                </div>
-              </div>
-            </div>
-          </div>`,
-
-        kids: `
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#fef3c7 0%,#fce7f3 25%,#ddd6fe 50%,#bfdbfe 75%,#bbf7d0 100%);position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden;display:flex;flex-direction:column;justify-content:center;">
-            <div style="position:absolute;top:15px;left:20px;font-size:32px;">⭐</div>
-            <div style="position:absolute;top:40px;right:25px;font-size:28px;">🌈</div>
-            <div style="position:absolute;bottom:80px;left:30px;font-size:24px;">🎈</div>
-            <div style="position:absolute;bottom:40px;right:25px;font-size:28px;">🎉</div>
-            <div style="position:absolute;top:110px;left:50px;font-size:18px;">✨</div>
-            <div style="position:absolute;top:160px;right:60px;font-size:20px;">🦋</div>
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-20deg);font-family:${fonts.bubblegum};font-size:80px;color:rgba(139,92,246,0.06);pointer-events:none;white-space:nowrap;">Preview</div>
-            
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 70px;">
-              <div style="font-family:${fonts.fredokaOne};font-size:18px;letter-spacing:0.08em;color:#7c3aed;margin-bottom:6px;">🎓 OFFICIAL DIPLOMA FROM 🎓</div>
-              <div style="font-family:${fonts.pacifico};font-size:44px;color:#db2777;text-shadow:2px 2px 0 #fbbf24;margin-bottom:6px;line-height:1.1;">Lil Phuckers Academy</div>
-              <div style="font-family:${fonts.bubblegum};font-size:15px;color:#7c3aed;margin-bottom:20px;">Where Tiny Humans Learn Big Things!</div>
-              
-              <div style="font-family:${fonts.bubblegum};font-size:17px;color:#3A3C3E;margin-bottom:8px;">This super special certificate is awarded to</div>
-              
-              <div style="font-family:${fonts.fredokaOne};font-size:42px;color:#2563eb;text-shadow:2px 2px 0 #fbbf24;margin:8px 0;line-height:1;">${fullName}</div>
-              
-              <div style="font-family:${fonts.bubblegum};font-size:15px;color:#3A3C3E;margin:14px 0;">for being totally AMAZING and earning their</div>
-              
-              <div style="font-family:${fonts.fredokaOne};font-size:28px;color:#059669;text-shadow:2px 2px 0 #fbbf24;margin-bottom:14px;line-height:1;">${degree}</div>
-              
-              <div style="font-family:${fonts.bubblegum};font-size:14px;color:#4b5563;max-width:500px;line-height:1.5;margin-bottom:8px;">
-                For showing incredible skills in ${achievement}!
-              </div>
-              
-              <div style="font-family:${fonts.bubblegum};font-size:14px;color:#7c3aed;margin-top:14px;margin-bottom:20px;">Celebrated on ${awardDate} 🎂</div>
-              
-              ${signaturesKids}
-            </div>
-          </div>`
+      
+      let achievement;
+      if (elements.achievementSelect.value === 'custom') {
+        achievement = elements.achievementCustom.value.trim() || 'being absolutely amazing';
+      } else {
+        achievement = elements.achievementSelect.value;
+      }
+      
+      // Build degree title
+      let degreeTitle;
+      if (degreeLevel === 'Bachelor') degreeTitle = `Bachelor of ${faculty}`;
+      else if (degreeLevel === 'Master') degreeTitle = `Master of ${faculty}`;
+      else degreeTitle = `PhD in ${faculty}`;
+      
+      return {
+        recipientName: `${firstName} ${lastName}`,
+        degreeTitle: degreeTitle,
+        achievementText: `in recognition of ${achievement}, with all the honors, rights and privileges belonging thereto.`,
+        pageNumber: state.currentPage,
       };
-
-      container.innerHTML = templates[currentStyle];
     }
 
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-      if (el.id !== 'achievementSelect' && el.id !== 'achievementCustom') {
-        el.addEventListener('input', renderCertificate);
+    // ===========================================
+    // UI STATE MANAGEMENT
+    // ===========================================
+    function setPreviewState(stateName, errorMessage = '') {
+      // Hide all states
+      elements.previewEmpty.classList.add('hidden');
+      elements.previewLoading.classList.add('hidden');
+      elements.previewImage.classList.add('hidden');
+      elements.previewError.classList.add('hidden');
+      
+      // Show requested state
+      switch (stateName) {
+        case 'empty':
+          elements.previewEmpty.classList.remove('hidden');
+          break;
+        case 'loading':
+          elements.previewLoading.classList.remove('hidden');
+          break;
+        case 'success':
+          elements.previewImage.classList.remove('hidden');
+          break;
+        case 'error':
+          elements.previewError.classList.remove('hidden');
+          elements.previewErrorMessage.textContent = errorMessage;
+          break;
+      }
+    }
+
+    function setFormDirty(isDirty) {
+      state.formDirty = isDirty;
+      if (isDirty && state.previewGenerated) {
+        elements.previewContainer.classList.add('form-dirty');
+      } else {
+        elements.previewContainer.classList.remove('form-dirty');
+      }
+    }
+
+    function updateCheckoutButton() {
+      const selected = document.querySelector('input[name="priceTier"]:checked');
+      const price = selected.dataset.price;
+      elements.checkoutBtn.textContent = `Purchase for $${price}`;
+      
+      // Enable checkout only if preview has been generated and form is not dirty
+      if (state.previewGenerated && !state.formDirty) {
+        elements.checkoutBtn.disabled = false;
+        elements.previewHint.classList.add('hidden');
+      } else {
+        elements.checkoutBtn.disabled = true;
+        elements.previewHint.classList.remove('hidden');
+        if (state.formDirty) {
+          elements.previewHint.textContent = 'Preview is outdated - regenerate before purchasing';
+        } else {
+          elements.previewHint.textContent = 'Generate a preview before purchasing';
+        }
+      }
+    }
+
+    // ===========================================
+    // PREVIEW GENERATION (API CALL)
+    // ===========================================
+    async function generatePreview() {
+      if (state.isGenerating) return;
+      
+      state.isGenerating = true;
+      elements.previewBtn.disabled = true;
+      elements.previewBtn.classList.add('loading');
+      setPreviewState('loading');
+      
+      const formData = getFormData();
+      
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/preview`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            templateId: CONFIG.MASTER_TEMPLATE_ID,
+            pageNumber: formData.pageNumber,
+            fields: {
+              '{{RECIPIENT_NAME}}': formData.recipientName,
+              '{{DEGREE_TITLE}}': formData.degreeTitle,
+              '{{ACHIEVEMENT_TEXT}}': formData.achievementText,
+            },
+          }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to generate preview');
+        }
+        
+        const data = await response.json();
+        
+        // Store the design copy ID for checkout
+        state.currentDesignCopyId = data.designId;
+        
+        // Display the thumbnail
+        elements.previewImage.src = data.thumbnailUrl;
+        elements.previewImage.onload = () => {
+          setPreviewState('success');
+          state.previewGenerated = true;
+          setFormDirty(false);
+          updateCheckoutButton();
+        };
+        elements.previewImage.onerror = () => {
+          throw new Error('Failed to load preview image');
+        };
+        
+      } catch (error) {
+        console.error('Preview generation error:', error);
+        setPreviewState('error', error.message);
+      } finally {
+        state.isGenerating = false;
+        elements.previewBtn.disabled = false;
+        elements.previewBtn.classList.remove('loading');
+      }
+    }
+
+    // ===========================================
+    // MOCK PREVIEW (for development without backend)
+    // ===========================================
+    async function generatePreviewMock() {
+      if (state.isGenerating) return;
+      
+      state.isGenerating = true;
+      elements.previewBtn.disabled = true;
+      elements.previewBtn.classList.add('loading');
+      setPreviewState('loading');
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      try {
+        // Use a placeholder image for now
+        // In production, this would be the Canva thumbnail URL
+        const mockThumbnails = {
+          1: 'https://via.placeholder.com/1000x775/f8f6f0/333333?text=Classic+Academia+Preview',
+          2: 'https://via.placeholder.com/1000x775/fffdf7/8B6914?text=Boujie+%26+Luxe+Preview',
+          3: 'https://via.placeholder.com/1000x775/f8f6f0/333333?text=Law+School+Preview',
+          4: 'https://via.placeholder.com/1000x775/f8f6f0/333333?text=Medical+Preview',
+          5: 'https://via.placeholder.com/1000x775/f8f6f0/333333?text=Creatives+Preview',
+          6: 'https://via.placeholder.com/1000x775/f8f6f0/8B0000?text=AI+%2F+Tech+Preview',
+          7: 'https://via.placeholder.com/1000x775/fef3c7/db2777?text=Lil+Phuckers+Preview',
+        };
+        
+        state.currentDesignCopyId = 'MOCK_DESIGN_' + Date.now();
+        
+        elements.previewImage.src = mockThumbnails[state.currentPage];
+        elements.previewImage.onload = () => {
+          setPreviewState('success');
+          state.previewGenerated = true;
+          setFormDirty(false);
+          updateCheckoutButton();
+        };
+        
+      } catch (error) {
+        console.error('Preview generation error:', error);
+        setPreviewState('error', error.message);
+      } finally {
+        state.isGenerating = false;
+        elements.previewBtn.disabled = false;
+        elements.previewBtn.classList.remove('loading');
+      }
+    }
+
+    // ===========================================
+    // EVENT LISTENERS
+    // ===========================================
+    
+    // Preview button
+    elements.previewBtn.addEventListener('click', () => {
+      if (CONFIG.MODE === 'production') {
+        generatePreview();
+      } else {
+        generatePreviewMock();
       }
     });
-
+    
+    // Achievement select toggle
+    elements.achievementSelect.addEventListener('change', function() {
+      if (this.value === 'custom') {
+        elements.achievementCustom.classList.remove('hidden');
+        elements.achievementCustom.focus();
+      } else {
+        elements.achievementCustom.classList.add('hidden');
+      }
+      setFormDirty(true);
+      updateCheckoutButton();
+    });
+    
+    // Mark form dirty on any input change
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('input', () => {
+        setFormDirty(true);
+        updateCheckoutButton();
+      });
+      input.addEventListener('change', () => {
+        setFormDirty(true);
+        updateCheckoutButton();
+      });
+    });
+    
+    // Style buttons
     document.querySelectorAll('.style-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('.style-btn').forEach(b => {
@@ -866,53 +835,42 @@
           b.style.borderColor = '#e5e7eb';
         });
         this.classList.add('active');
-        currentStyle = this.dataset.style;
-        renderCertificate();
+        state.currentStyle = this.dataset.style;
+        state.currentPage = parseInt(this.dataset.page);
+        setFormDirty(true);
+        updateCheckoutButton();
       });
     });
+    
+    // Price tier changes
+    document.querySelectorAll('input[name="priceTier"]').forEach(input => {
+      input.addEventListener('change', updateCheckoutButton);
+    });
 
-    renderCertificate();
-
-    // ============================================
-    // MOCK STRIPE CHECKOUT
-    // ============================================
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const tierInputs = document.querySelectorAll('input[name="priceTier"]');
+    // ===========================================
+    // STRIPE CHECKOUT (unchanged from original)
+    // ===========================================
     const stripeModal = document.getElementById('stripeModal');
     const checkoutFormState = document.getElementById('checkoutFormState');
     const successState = document.getElementById('successState');
     const mockCheckoutForm = document.getElementById('mockCheckoutForm');
-    
-    function updateButtonPrice() {
-      const selected = document.querySelector('input[name="priceTier"]:checked');
-      const price = selected.dataset.price;
-      checkoutBtn.textContent = `Purchase for $${price}`;
-    }
-
-    tierInputs.forEach(input => {
-      input.addEventListener('change', updateButtonPrice);
-    });
 
     function openModal() {
       const selected = document.querySelector('input[name="priceTier"]:checked');
       const price = selected.dataset.price;
       const label = selected.dataset.label;
       
-      // Update modal with current selection
       document.getElementById('modalProductName').textContent = label;
       document.getElementById('modalPrice').textContent = `$${price}`;
       document.getElementById('payBtnPrice').textContent = `$${price}`;
       
-      // Pre-fill cardholder name from form
       const firstName = document.getElementById('firstName').value;
       const lastName = document.getElementById('lastName').value;
       document.getElementById('cardholderName').value = `${firstName} ${lastName}`;
       
-      // Reset to checkout form state
       checkoutFormState.classList.remove('hidden');
       successState.classList.add('hidden');
       
-      // Show modal
       stripeModal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -931,10 +889,8 @@
       return result;
     }
 
-    // Handle checkout button click
-    checkoutBtn.addEventListener('click', openModal);
+    elements.checkoutBtn.addEventListener('click', openModal);
 
-    // Handle mock form submission
     mockCheckoutForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
@@ -942,33 +898,27 @@
       payBtn.disabled = true;
       payBtn.classList.add('processing');
       
-      // Simulate processing delay
       setTimeout(() => {
-        // Generate order number
         document.getElementById('orderNumber').textContent = generateOrderNumber();
-        
-        // Switch to success state
         checkoutFormState.classList.add('hidden');
         successState.classList.remove('hidden');
-        
         payBtn.disabled = false;
         payBtn.classList.remove('processing');
       }, 2000);
     });
 
-    // Close modal on overlay click
     stripeModal.addEventListener('click', function(e) {
-      if (e.target === stripeModal) {
-        closeModal();
-      }
+      if (e.target === stripeModal) closeModal();
     });
 
-    // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && stripeModal.classList.contains('active')) {
-        closeModal();
-      }
+      if (e.key === 'Escape' && stripeModal.classList.contains('active')) closeModal();
     });
+
+    // ===========================================
+    // INITIALIZATION
+    // ===========================================
+    updateCheckoutButton();
   </script>
 </body>
 </html>
