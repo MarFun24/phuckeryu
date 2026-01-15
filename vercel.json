@@ -1,19 +1,5 @@
 {
   "version": 2,
-  "framework": null,
-  "buildCommand": null,
-  "outputDirectory": null,
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "methods": ["POST", "GET", "DELETE", "OPTIONS"],
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
