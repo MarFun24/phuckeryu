@@ -1,4 +1,22 @@
-import { parse } from 'cookie';
+/**
+ * GET /api/auth/callback
+ * 
+ * Handles OAuth callback from Canva, exchanges code for tokens.
+ */
+
+// Simple cookie parser (no external dependency)
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, ...rest] = cookie.split('=');
+    if (name && rest.length) {
+      cookies[name.trim()] = rest.join('=').trim();
+    }
+  });
+  return cookies;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -16,7 +34,7 @@ export default async function handler(req, res) {
   }
 
   // Retrieve code_verifier from cookie
-  const cookies = parse(req.headers.cookie || '');
+  const cookies = parseCookies(req.headers.cookie);
   const codeVerifier = cookies.code_verifier;
 
   if (!codeVerifier) {
@@ -30,7 +48,7 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code: code,
-        code_verifier: codeVerifier,  // <-- THIS IS WHAT WAS MISSING
+        code_verifier: codeVerifier,
         client_id: process.env.CANVA_CLIENT_ID,
         client_secret: process.env.CANVA_CLIENT_SECRET,
         redirect_uri: 'https://phuckeryuniversity.vercel.app/api/auth/callback',
