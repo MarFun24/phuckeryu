@@ -1,3 +1,5 @@
+import { parse } from 'cookie';
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,6 +15,14 @@ export default async function handler(req, res) {
     return res.status(400).send('Missing authorization code');
   }
 
+  // Retrieve code_verifier from cookie
+  const cookies = parse(req.headers.cookie || '');
+  const codeVerifier = cookies.code_verifier;
+
+  if (!codeVerifier) {
+    return res.status(400).send('Missing code_verifier. Please start the auth flow again at /api/auth/login');
+  }
+
   try {
     const tokenResponse = await fetch('https://api.canva.com/rest/v1/oauth/token', {
       method: 'POST',
@@ -20,6 +30,7 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code: code,
+        code_verifier: codeVerifier,  // <-- THIS IS WHAT WAS MISSING
         client_id: process.env.CANVA_CLIENT_ID,
         client_secret: process.env.CANVA_CLIENT_SECRET,
         redirect_uri: 'https://phuckeryuniversity.vercel.app/api/auth/callback',
@@ -31,6 +42,9 @@ export default async function handler(req, res) {
     if (!tokenResponse.ok) {
       throw new Error(tokenData.error_description || tokenData.error || 'Token exchange failed');
     }
+
+    // Clear the cookie
+    res.setHeader('Set-Cookie', 'code_verifier=; HttpOnly; Secure; Path=/; Max-Age=0');
 
     return res.status(200).send(`
       <html>
@@ -44,7 +58,6 @@ export default async function handler(req, res) {
         </body>
       </html>
     `);
-
   } catch (err) {
     return res.status(500).send(`Error: ${err.message}`);
   }
