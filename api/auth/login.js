@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 
 /**
  * GET /api/auth/login
@@ -17,9 +17,8 @@ export default async function handler(req, res) {
   }
 
   // Generate PKCE values
-  const codeVerifier = crypto.randomBytes(32).toString('base64url');
-  const codeChallenge = crypto
-    .createHash('sha256')
+  const codeVerifier = randomBytes(32).toString('base64url');
+  const codeChallenge = createHash('sha256')
     .update(codeVerifier)
     .digest('base64url');
 
