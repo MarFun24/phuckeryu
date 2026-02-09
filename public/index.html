@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>University of Phuckery - Degree Customizer</title>
+  <script src="https://js.stripe.com/v3/"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -363,76 +364,40 @@
     </div>
   </div>
 
-  <!-- Mock Stripe Checkout Modal -->
+  <!-- Stripe Payment Modal -->
   <div class="stripe-modal-overlay" id="stripeModal">
     <div class="stripe-checkout">
-      <div id="checkoutFormState">
-        <div class="stripe-header">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-content-center overflow-hidden">
-                <img src="https://res.cloudinary.com/ded9cb1wd/image/upload/v1767813427/PU_Logo_Blue_White_rwkqvn.png" alt="Logo" class="w-8 h-8 object-contain m-auto">
-              </div>
-              <div>
-                <div class="font-semibold">University of Phuckery</div>
-                <div class="text-sm opacity-80" id="modalProductName">Digital Download</div>
-              </div>
+      <div class="stripe-header">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-content-center overflow-hidden">
+              <img src="https://res.cloudinary.com/ded9cb1wd/image/upload/v1767813427/PU_Logo_Blue_White_rwkqvn.png" alt="Logo" class="w-8 h-8 object-contain m-auto">
             </div>
-            <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-          <div class="text-3xl font-bold" id="modalPrice">$9.99</div>
-        </div>
-        
-        <div class="p-6">
-          <div class="demo-banner">
-            <div class="demo-banner-icon">!</div>
-            <div class="text-sm text-amber-800">
-              <strong>Demo Mode:</strong> This is a mockup. No real payment will be processed.
+            <div>
+              <div class="font-semibold">University of Phuckery</div>
+              <div class="text-sm opacity-80" id="modalProductName">Digital Download</div>
             </div>
           </div>
-          
-          <form id="mockCheckoutForm" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input type="email" class="stripe-input" placeholder="you@example.com" value="demo@example.com">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Card information</label>
-              <input type="text" class="stripe-input" placeholder="1234 1234 1234 1234" value="4242 4242 4242 4242">
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <input type="text" class="stripe-input" placeholder="MM / YY" value="12 / 28">
-                <input type="text" class="stripe-input" placeholder="CVC" value="123">
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Name on card</label>
-              <input type="text" class="stripe-input" placeholder="Full name on card" id="cardholderName">
-            </div>
-            
-            <button type="submit" class="stripe-btn" id="payBtn">
-              Pay <span id="payBtnPrice">$9.99</span>
-            </button>
-          </form>
+          <button onclick="closeStripeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
+        <div class="text-3xl font-bold" id="modalPrice">$9.99</div>
       </div>
       
-      <div id="successState" class="hidden">
-        <div class="success-state">
-          <div class="success-checkmark">
-            <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+      <div class="p-6">
+        <form id="payment-form">
+          <div id="payment-element" class="mb-4">
+            <!-- Stripe Payment Element will be inserted here -->
           </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h3>
-          <p class="text-gray-600 mb-6">Your diploma is being generated...</p>
-          <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <div class="text-sm text-gray-500 mb-1">Order confirmation</div>
-            <div class="font-mono text-lg font-semibold" id="orderNumber">PHU-2025-XXXXX</div>
-          </div>
-          <button onclick="closeModal()" class="stripe-btn">Done</button>
-        </div>
+          
+          <div id="payment-message" class="hidden text-sm text-red-600 mb-4"></div>
+          
+          <button type="submit" class="stripe-btn" id="submit">
+            <span id="button-text">Pay now</span>
+            <div id="spinner" class="hidden inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -553,52 +518,150 @@
     });
     
     // Checkout
-    checkoutBtn.addEventListener('click', openModal);
+    checkoutBtn.addEventListener('click', openStripeModal);
     
     // ===========================================
-    // STRIPE MODAL
+    // STRIPE PAYMENT ELEMENT
     // ===========================================
     const stripeModal = document.getElementById('stripeModal');
+    const stripe = Stripe('pk_live_51Sv5nAPVCYNIQbDA9Y4fMrDahZq43rxfz15DSpkSzt6Wb3GKI8Cye47l3dbDuCcgBInW180B5VUkJrKrRH9Tjpo200yblmvnL2');
+    let elements;
+    let clientSecret;
     
-    function openModal() {
+    async function openStripeModal() {
+      // Gather form data
+      const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        certificationDate: datePreview.textContent.replace('Will appear as: ', ''),
+        degreeLevel: document.getElementById('degreeLevel').value,
+        faculty: document.getElementById('faculty').value,
+        achievement: achievementSelect.value === 'custom' ? achievementCustom.value : achievementSelect.value,
+        style: currentStyle,
+        priceId: document.querySelector('input[name="priceTier"]:checked').dataset.price === '9.99' ? 'price_1SyyrbPVCYNIQbDAltXaZL6q' : ''
+      };
+      
+      // Validate
+      if (!formData.firstName || !formData.lastName || !formData.certificationDate) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      
+      // Update modal header
       const selected = document.querySelector('input[name="priceTier"]:checked');
       document.getElementById('modalProductName').textContent = selected.dataset.label;
       document.getElementById('modalPrice').textContent = `$${selected.dataset.price}`;
-      document.getElementById('payBtnPrice').textContent = `$${selected.dataset.price}`;
-      document.getElementById('cardholderName').value = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
       
-      document.getElementById('checkoutFormState').classList.remove('hidden');
-      document.getElementById('successState').classList.add('hidden');
+      // Show modal
       stripeModal.classList.add('active');
       document.body.style.overflow = 'hidden';
+      
+      try {
+        // Create Payment Intent
+        const response = await fetch('/api/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create payment intent');
+        }
+        
+        clientSecret = data.clientSecret;
+        
+        // Initialize Stripe Elements
+        const appearance = {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#635bff',
+          }
+        };
+        
+        elements = stripe.elements({ appearance, clientSecret });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
+        
+      } catch (error) {
+        console.error('Payment initialization error:', error);
+        showMessage(error.message);
+      }
     }
     
-    function closeModal() {
+    function closeStripeModal() {
       stripeModal.classList.remove('active');
       document.body.style.overflow = '';
+      
+      // Cleanup
+      if (elements) {
+        elements.getElement('payment')?.unmount();
+        elements = null;
+      }
     }
     
-    document.getElementById('mockCheckoutForm').addEventListener('submit', function(e) {
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', handleSubmit);
+    
+    async function handleSubmit(e) {
       e.preventDefault();
-      const payBtn = document.getElementById('payBtn');
-      payBtn.disabled = true;
-      payBtn.textContent = 'Processing...';
+      setLoading(true);
+      
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.origin + '/success.html',
+        },
+      });
+      
+      if (error) {
+        showMessage(error.message);
+        setLoading(false);
+      }
+      // Customer will be redirected to success page automatically
+    }
+    
+    function showMessage(messageText) {
+      const messageContainer = document.querySelector('#payment-message');
+      messageContainer.classList.remove('hidden');
+      messageContainer.textContent = messageText;
       
       setTimeout(() => {
-        document.getElementById('orderNumber').textContent = 'PHU-2025-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-        document.getElementById('checkoutFormState').classList.add('hidden');
-        document.getElementById('successState').classList.remove('hidden');
-        payBtn.disabled = false;
-        payBtn.innerHTML = 'Pay <span id="payBtnPrice">$9.99</span>';
-      }, 2000);
-    });
+        messageContainer.classList.add('hidden');
+        messageContainer.textContent = '';
+      }, 4000);
+    }
     
+    function setLoading(isLoading) {
+      const submitButton = document.querySelector('#submit');
+      const spinner = document.querySelector('#spinner');
+      const buttonText = document.querySelector('#button-text');
+      
+      if (isLoading) {
+        submitButton.disabled = true;
+        spinner.classList.remove('hidden');
+        buttonText.textContent = 'Processing...';
+      } else {
+        submitButton.disabled = false;
+        spinner.classList.add('hidden');
+        buttonText.textContent = 'Pay now';
+      }
+    }
+    
+    // Close modal on overlay click
     stripeModal.addEventListener('click', (e) => {
-      if (e.target === stripeModal) closeModal();
+      if (e.target === stripeModal) closeStripeModal();
     });
     
+    // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape' && stripeModal.classList.contains('active')) {
+        closeStripeModal();
+      }
     });
     
     // ===========================================
