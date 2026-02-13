@@ -578,11 +578,19 @@
           body: JSON.stringify(formData)
         });
         
-        const data = await response.json();
-        
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to create payment intent');
+          const text = await response.text();
+          let errorMessage = 'Failed to create payment intent';
+          try {
+            const errData = JSON.parse(text);
+            errorMessage = errData.error || errorMessage;
+          } catch {
+            errorMessage = text || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
+
+        const data = await response.json();
         
         clientSecret = data.clientSecret;
         
