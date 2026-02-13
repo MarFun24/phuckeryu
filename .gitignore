@@ -19,6 +19,11 @@ Thumbs.db
 *.swp
 *.swo
 
+# Test output
+test-output/
+test-certificate*.pdf
+test-generate.js
+
 # Logs
 *.log
 npm-debug.log*

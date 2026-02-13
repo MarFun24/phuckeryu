@@ -10,5 +10,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "stripe": "^20.3.1"
   }
 }

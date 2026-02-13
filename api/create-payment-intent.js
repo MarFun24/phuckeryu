@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
       degreeLevel,
       faculty,
       achievement,
+      recipientEmail,
       style,
       priceId
     } = req.body;
@@ -46,6 +47,7 @@ module.exports = async (req, res) => {
         degreeLevel,
         faculty,
         achievement,
+        recipientEmail: recipientEmail || '',
         style,
       },
     });

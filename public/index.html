@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>University of Phuckery - Degree Customizer</title>
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -242,21 +243,27 @@
           <div>
             <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Achievement Description</label>
             <select id="achievementSelect" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white mb-2">
-              <option value="exemplary performance in the art of subtle comebacks and graceful revenge">🎯 Subtle comebacks & graceful revenge</option>
-              <option value="mastering the ancient art of looking unbothered while internally screaming">😌 Looking unbothered while screaming inside</option>
-              <option value="outstanding achievement in minding their own damn business">🙈 Minding their own damn business</option>
-              <option value="exceptional skills in reading the room and choosing chaos anyway">🔥 Reading the room, choosing chaos</option>
-              <option value="advanced proficiency in saying 'per my last email' with devastating effect">📧 Weaponizing 'per my last email'</option>
-              <option value="achieving zen-level detachment from other people's drama">🧘 Zen-level drama detachment</option>
-              <option value="fluency in strategic silence and perfectly timed exits">🚪 Strategic silence & perfect exits</option>
-              <option value="successfully adulting for 72 consecutive hours without incident">🏆 72 hours of successful adulting</option>
-              <option value="completing tasks at the absolute last possible moment with excellence">⏰ Last-minute excellence</option>
-              <option value="maintaining composure while everything was literally on fire">🔥 Composure amid chaos</option>
-              <option value="finding information that was absolutely none of their business">🔍 Expert-level info gathering</option>
-              <option value="perfecting the art of nodding thoughtfully while thinking about dinner">🍕 Thoughtful nodding (thinking about food)</option>
+              <option value="mastering email tone while feeling none">📧 Mastering email tone while feeling none</option>
+              <option value="attending meetings that should have been emails">📋 Attending meetings that should have been emails</option>
+              <option value="professional restraint during repeated incompetence">😤 Professional restraint during repeated incompetence</option>
+              <option value="unapologetic cake consumption without sharing">🍰 Unapologetic cake consumption without sharing</option>
+              <option value="in weaponizing blankets throughout the night">🛏️ Weaponizing blankets throughout the night</option>
+              <option value="in strategic towel abandonment despite repeated reminders">🧺 Strategic towel abandonment despite repeated reminders</option>
+              <option value="in thermostat negotiations ending in silent compromise">🌡️ Thermostat negotiations ending in silent compromise</option>
+              <option value="in smiling politely through unsolicited life advice">😊 Smiling politely through unsolicited life advice</option>
+              <option value="in surviving holidays without correcting anyone">🎄 Surviving holidays without correcting anyone</option>
+              <option value="in translating human requests into logical constraints">🤖 Translating human requests into logical constraints</option>
+              <option value="in unconditional devotion to non-paying furry dependents">🐾 Unconditional devotion to non-paying furry dependents</option>
+              <option value="in surviving passive-aggressive noise complaints with dignified restraint">🏠 Surviving passive-aggressive noise complaints with dignified restraint</option>
               <option value="custom">✏️ Write your own...</option>
             </select>
             <textarea id="achievementCustom" rows="2" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none hidden" placeholder="Write your custom achievement..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Recipient Email Address</label>
+            <input type="email" id="recipientEmail" placeholder="recipient@example.com" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
+            <p class="text-xs text-gray-500 mt-1.5 leading-relaxed">This certificate can be sent anonymously — so go ahead and let the phuckery fly.</p>
           </div>
 
           <div class="pt-3 border-t border-gray-200">
@@ -347,14 +354,17 @@
             <p class="text-sm text-gray-500">Click a style button to see the template</p>
           </div>
           
-          <!-- Template Images (hidden by default) -->
-          <img id="template-classic" src="./CLASSIC_ACADEMIA.png" class="preview-image active" alt="Classic Academia Template">
-          <img id="template-boujie" src="./BOUGIE___LUXE.png" class="preview-image" alt="Boujie & Luxe Template">
-          <img id="template-legal" src="./LAW_SCHOOL.png" class="preview-image" alt="Law School Template">
-          <img id="template-medical" src="./MEDICAL.png" class="preview-image" alt="Medical Template">
-          <img id="template-creative" src="./CREATIVES.png" class="preview-image" alt="Creatives Template">
-          <img id="template-tech" src="./AI_TECH.png" class="preview-image" alt="AI/Tech Template">
-          <img id="template-kids" src="./LIL_PHUCKERS.png" class="preview-image" alt="Lil Phuckers Template">
+          <!-- Live PDF Preview (rendered as image) -->
+          <canvas id="previewCanvas" class="preview-image active" style="width:100%;height:100%;"></canvas>
+
+          <!-- Fallback static images (shown while loading) -->
+          <img id="template-classic" src="./CLASSIC_ACADEMIA_BG.png" class="preview-image" alt="Classic Academia Template">
+          <img id="template-boujie" src="./BOUGIE___LUXE_BG.png" class="preview-image" alt="Boujie & Luxe Template">
+          <img id="template-legal" src="./LAW_SCHOOL_BG.png" class="preview-image" alt="Law School Template">
+          <img id="template-medical" src="./MEDICAL_BG.png" class="preview-image" alt="Medical Template">
+          <img id="template-creative" src="./CREATIVES_BG.png" class="preview-image" alt="Creatives Template">
+          <img id="template-tech" src="./AI_TECH_BG.png" class="preview-image" alt="AI/Tech Template">
+          <img id="template-kids" src="./LIL_PHUCKERS_BG.png" class="preview-image" alt="Lil Phuckers Template">
         </div>
         
         <p class="text-xs text-center mt-4" style="color:#3A3C3E;opacity:0.6;">
@@ -506,6 +516,7 @@
         // Switch template
         const style = this.dataset.style;
         switchTemplate(style);
+        schedulePreview();
       });
     });
     
@@ -537,6 +548,7 @@
         degreeLevel: document.getElementById('degreeLevel').value,
         faculty: document.getElementById('faculty').value,
         achievement: achievementSelect.value === 'custom' ? achievementCustom.value : achievementSelect.value,
+        recipientEmail: document.getElementById('recipientEmail').value,
         style: currentStyle,
         priceId: document.querySelector('input[name="priceTier"]:checked').dataset.price === '9.99' ? 'price_1SyyrbPVCYNIQbDAltXaZL6q' : ''
       };
@@ -665,10 +677,87 @@
     });
     
     // ===========================================
+    // LIVE PDF PREVIEW
+    // ===========================================
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let previewTimeout = null;
+    const previewCanvas = document.getElementById('previewCanvas');
+
+    function getFormData() {
+      return {
+        firstName: document.getElementById('firstName').value || 'Your Name',
+        lastName: document.getElementById('lastName').value || 'Here',
+        certificationDate: datePreview.textContent.replace('Will appear as: ', ''),
+        degreeLevel: document.getElementById('degreeLevel').value,
+        faculty: document.getElementById('faculty').value,
+        achievement: achievementSelect.value === 'custom' ? achievementCustom.value : achievementSelect.value,
+        style: currentStyle,
+      };
+    }
+
+    async function updatePreview() {
+      const formData = getFormData();
+
+      try {
+        const response = await fetch('/api/generate-certificate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) throw new Error('Preview generation failed');
+
+        const pdfBytes = await response.arrayBuffer();
+
+        // Render PDF to canvas using pdf.js
+        const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+        const page = await pdf.getPage(1);
+
+        const container = document.getElementById('previewContainer');
+        const containerWidth = container.clientWidth;
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = containerWidth / viewport.width;
+        const scaledViewport = page.getViewport({ scale });
+
+        previewCanvas.width = scaledViewport.width;
+        previewCanvas.height = scaledViewport.height;
+
+        const ctx = previewCanvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+
+        // Show canvas, hide static images
+        document.querySelectorAll('.preview-image').forEach(img => img.classList.remove('active'));
+        previewCanvas.classList.add('active');
+        previewEmpty.style.display = 'none';
+
+      } catch (err) {
+        console.error('Preview error:', err);
+        // Fall back to static background image
+        document.querySelectorAll('.preview-image').forEach(img => img.classList.remove('active'));
+        const fallback = document.getElementById(`template-${currentStyle}`);
+        if (fallback) fallback.classList.add('active');
+        previewEmpty.style.display = 'none';
+      }
+    }
+
+    function schedulePreview() {
+      clearTimeout(previewTimeout);
+      previewTimeout = setTimeout(updatePreview, 400);
+    }
+
+    // Attach live preview to all form inputs
+    document.querySelectorAll('#diplomaForm input, #diplomaForm select, #diplomaForm textarea').forEach(el => {
+      el.addEventListener('input', schedulePreview);
+      el.addEventListener('change', schedulePreview);
+    });
+
+    // ===========================================
     // INITIALIZATION
     // ===========================================
-    // Show classic template by default
+    // Show classic template by default and trigger first preview
     switchTemplate('classic');
+    schedulePreview();
   </script>
 </body>
 </html>
