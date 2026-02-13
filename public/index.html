@@ -243,18 +243,18 @@
           <div>
             <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Achievement Description</label>
             <select id="achievementSelect" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all bg-white mb-2">
-              <option value="mastering email tone while feeling none">📧 Mastering email tone while feeling none</option>
-              <option value="attending meetings that should have been emails">📋 Attending meetings that should have been emails</option>
-              <option value="professional restraint during repeated incompetence">😤 Professional restraint during repeated incompetence</option>
-              <option value="unapologetic cake consumption without sharing">🍰 Unapologetic cake consumption without sharing</option>
-              <option value="in weaponizing blankets throughout the night">🛏️ Weaponizing blankets throughout the night</option>
-              <option value="in strategic towel abandonment despite repeated reminders">🧺 Strategic towel abandonment despite repeated reminders</option>
-              <option value="in thermostat negotiations ending in silent compromise">🌡️ Thermostat negotiations ending in silent compromise</option>
-              <option value="in smiling politely through unsolicited life advice">😊 Smiling politely through unsolicited life advice</option>
-              <option value="in surviving holidays without correcting anyone">🎄 Surviving holidays without correcting anyone</option>
-              <option value="in translating human requests into logical constraints">🤖 Translating human requests into logical constraints</option>
-              <option value="in unconditional devotion to non-paying furry dependents">🐾 Unconditional devotion to non-paying furry dependents</option>
-              <option value="in surviving passive-aggressive noise complaints with dignified restraint">🏠 Surviving passive-aggressive noise complaints with dignified restraint</option>
+              <option value="mastering email tone while feeling none.">📧 Mastering email tone while feeling none.</option>
+              <option value="attending meetings that should have been emails.">📋 Attending meetings that should have been emails.</option>
+              <option value="professional restraint during repeated incompetence.">😤 Professional restraint during repeated incompetence.</option>
+              <option value="unapologetic cake consumption without sharing.">🍰 Unapologetic cake consumption without sharing.</option>
+              <option value="in weaponizing blankets throughout the night.">🛏️ Weaponizing blankets throughout the night.</option>
+              <option value="in strategic towel abandonment despite repeated reminders.">🧺 Strategic towel abandonment despite repeated reminders.</option>
+              <option value="in thermostat negotiations ending in silent compromise.">🌡️ Thermostat negotiations ending in silent compromise.</option>
+              <option value="in smiling politely through unsolicited life advice.">😊 Smiling politely through unsolicited life advice.</option>
+              <option value="in surviving holidays without correcting anyone.">🎄 Surviving holidays without correcting anyone.</option>
+              <option value="in translating human requests into logical constraints.">🤖 Translating human requests into logical constraints.</option>
+              <option value="in unconditional devotion to non-paying furry dependents.">🐾 Unconditional devotion to non-paying furry dependents.</option>
+              <option value="in surviving passive-aggressive noise complaints with dignified restraint.">🏠 Surviving passive-aggressive noise complaints with dignified restraint.</option>
               <option value="custom">✏️ Write your own...</option>
             </select>
             <textarea id="achievementCustom" rows="2" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none hidden" placeholder="Write your custom achievement..."></textarea>
@@ -433,11 +433,11 @@
     // ===========================================
     function formatDate(dateString) {
       if (!dateString) return '';
-      
-      const date = new Date(dateString);
-      const day = date.getDate();
-      const month = date.toLocaleString('en-US', { month: 'long' });
-      const year = date.getFullYear();
+
+      // Parse parts directly to avoid UTC timezone shift
+      const [year, month, day] = dateString.split('-').map(Number);
+      const monthNames = ['January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
       
       // Add ordinal suffix (st, nd, rd, th)
       const suffix = (day) => {
@@ -450,7 +450,7 @@
         }
       };
       
-      return `${day}${suffix(day)} day of ${month}, ${year}`;
+      return `${day}${suffix(day)} day of ${monthNames[month - 1]}, ${year}`;
     }
 
     // Set today's date as default
