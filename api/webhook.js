@@ -1,14 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
-// Read raw body from request stream (needed for Stripe signature verification)
-function getRawBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
-  });
-}
+const { buffer } = require('micro');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -21,8 +12,8 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Use raw body for signature verification — parsed JSON won't match
-    const rawBody = await getRawBody(req);
+    // Use micro's buffer() to get the raw body — works reliably on Vercel
+    const rawBody = await buffer(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);

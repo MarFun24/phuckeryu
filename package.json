@@ -12,6 +12,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "micro": "^10.0.1",
     "pdf-lib": "^1.17.1",
     "stripe": "^20.3.1"
   }
