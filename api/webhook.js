@@ -1,10 +1,12 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { buffer } = require('micro');
 
 // Version marker to confirm deployment
-const WEBHOOK_VERSION = 'v3';
+const WEBHOOK_VERSION = 'v4';
 
-module.exports = async (req, res) => {
+async function handler(req, res) {
   console.log(`[webhook ${WEBHOOK_VERSION}] Incoming ${req.method} request`);
+  console.log(`[webhook ${WEBHOOK_VERSION}] req.body type: ${typeof req.body}, isBuffer: ${Buffer.isBuffer(req.body)}, defined: ${req.body !== undefined}`);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -16,29 +18,10 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Vercel (non-Next.js) auto-parses JSON bodies. The bodyParser:false
-    // config is a Next.js feature and has no effect here. We must
-    // reconstruct the raw body string from the parsed req.body.
-    let rawBody;
-    if (Buffer.isBuffer(req.body)) {
-      rawBody = req.body;
-      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is Buffer, length: ${rawBody.length}`);
-    } else if (typeof req.body === 'string') {
-      rawBody = req.body;
-      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is string, length: ${rawBody.length}`);
-    } else if (req.body) {
-      rawBody = JSON.stringify(req.body);
-      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is ${typeof req.body}, stringified length: ${rawBody.length}`);
-    } else {
-      // Body parser disabled or no body — read from stream
-      rawBody = await new Promise((resolve, reject) => {
-        const chunks = [];
-        req.on('data', (chunk) => chunks.push(chunk));
-        req.on('end', () => resolve(Buffer.concat(chunks)));
-        req.on('error', reject);
-      });
-      console.log(`[webhook ${WEBHOOK_VERSION}] Read from stream, length: ${rawBody.length}`);
-    }
+    // Use micro's buffer() to read the raw body. With bodyParser disabled,
+    // the stream is unconsumed and we get the exact bytes Stripe signed.
+    const rawBody = await buffer(req);
+    console.log(`[webhook ${WEBHOOK_VERSION}] Raw body length: ${rawBody.length}`);
 
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
     console.log(`[webhook ${WEBHOOK_VERSION}] Signature verified successfully`);
@@ -104,5 +87,14 @@ module.exports = async (req, res) => {
   }
 
   res.status(200).json({ received: true });
+}
+
+// Disable Vercel's body parser so we can access the raw request body
+// for Stripe webhook signature verification
+handler.config = {
+  api: {
+    bodyParser: false,
+  },
 };
 
+module.exports = handler;
