@@ -1,5 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+// Read raw body from request stream (needed for Stripe signature verification)
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,8 +21,9 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Verify webhook signature
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    // Use raw body for signature verification — parsed JSON won't match
+    const rawBody = await getRawBody(req);
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -65,4 +76,12 @@ module.exports = async (req, res) => {
   }
 
   res.status(200).json({ received: true });
+};
+
+// Disable Vercel's automatic body parsing — Stripe needs the raw body
+// for webhook signature verification
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
 };
