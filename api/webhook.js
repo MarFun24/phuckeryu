@@ -1,12 +1,21 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { buffer } = require('micro');
 
 // Version marker to confirm deployment
-const WEBHOOK_VERSION = 'v4';
+const WEBHOOK_VERSION = 'v5';
+
+// Read the raw body from the request stream as a Buffer
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
 
 async function handler(req, res) {
   console.log(`[webhook ${WEBHOOK_VERSION}] Incoming ${req.method} request`);
-  console.log(`[webhook ${WEBHOOK_VERSION}] req.body type: ${typeof req.body}, isBuffer: ${Buffer.isBuffer(req.body)}, defined: ${req.body !== undefined}`);
+  console.log(`[webhook ${WEBHOOK_VERSION}] req.body type: ${typeof req.body}, defined: ${req.body !== undefined}`);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -18,12 +27,30 @@ async function handler(req, res) {
   let event;
 
   try {
-    // Use micro's buffer() to read the raw body. With bodyParser disabled,
-    // the stream is unconsumed and we get the exact bytes Stripe signed.
-    const rawBody = await buffer(req);
-    console.log(`[webhook ${WEBHOOK_VERSION}] Raw body length: ${rawBody.length}`);
+    // With bodyParser:false, the stream is unconsumed — read raw bytes.
+    // If bodyParser is still active, req.body will be defined and the
+    // stream will be empty, so we fall back to JSON.stringify.
+    const rawBody = await readRawBody(req);
+    console.log(`[webhook ${WEBHOOK_VERSION}] Stream body length: ${rawBody.length}`);
 
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    let payload;
+    if (rawBody.length > 0) {
+      payload = rawBody;
+      console.log(`[webhook ${WEBHOOK_VERSION}] Using raw stream bytes`);
+    } else if (typeof req.body === 'string') {
+      payload = req.body;
+      console.log(`[webhook ${WEBHOOK_VERSION}] Fallback: req.body as string`);
+    } else if (Buffer.isBuffer(req.body)) {
+      payload = req.body;
+      console.log(`[webhook ${WEBHOOK_VERSION}] Fallback: req.body as Buffer`);
+    } else if (req.body) {
+      payload = JSON.stringify(req.body);
+      console.log(`[webhook ${WEBHOOK_VERSION}] Fallback: stringified req.body`);
+    } else {
+      throw new Error('No request body available');
+    }
+
+    event = stripe.webhooks.constructEvent(payload, sig, webhookSecret);
     console.log(`[webhook ${WEBHOOK_VERSION}] Signature verified successfully`);
   } catch (err) {
     console.error(`[webhook ${WEBHOOK_VERSION}] Verification failed:`, err.message);
