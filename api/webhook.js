@@ -1,5 +1,14 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { buffer } = require('micro');
+
+// Read raw body directly from the request stream (no external dependencies)
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -12,8 +21,17 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Use micro's buffer() to get the raw body — works reliably on Vercel
-    const rawBody = await buffer(req);
+    const rawBody = await getRawBody(req);
+    console.log('Webhook received — raw body length:', rawBody.length);
+    console.log('Stripe signature header:', sig ? 'present' : 'MISSING');
+    console.log('Webhook secret configured:', webhookSecret ? 'yes' : 'NO');
+
+    if (rawBody.length === 0) {
+      console.error('Raw body is EMPTY — Vercel body parser likely consumed the stream');
+      console.error('req.body exists:', !!req.body);
+      console.error('req.body type:', typeof req.body);
+    }
+
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
