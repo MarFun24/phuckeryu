@@ -1,6 +1,11 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+// Version marker to confirm deployment
+const WEBHOOK_VERSION = 'v3';
+
 module.exports = async (req, res) => {
+  console.log(`[webhook ${WEBHOOK_VERSION}] Incoming ${req.method} request`);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -11,28 +16,35 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Vercel auto-parses JSON bodies and the bodyParser:false config
-    // is ignored due to ESM-to-CJS compilation. Use req.body directly.
+    // Vercel (non-Next.js) auto-parses JSON bodies. The bodyParser:false
+    // config is a Next.js feature and has no effect here. We must
+    // reconstruct the raw body string from the parsed req.body.
     let rawBody;
-    if (req.body) {
-      rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-      console.log('Using Vercel-parsed req.body, length:', rawBody.length);
+    if (Buffer.isBuffer(req.body)) {
+      rawBody = req.body;
+      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is Buffer, length: ${rawBody.length}`);
+    } else if (typeof req.body === 'string') {
+      rawBody = req.body;
+      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is string, length: ${rawBody.length}`);
+    } else if (req.body) {
+      rawBody = JSON.stringify(req.body);
+      console.log(`[webhook ${WEBHOOK_VERSION}] req.body is ${typeof req.body}, stringified length: ${rawBody.length}`);
     } else {
-      // Fallback: read from stream if body parser is actually disabled
+      // Body parser disabled or no body — read from stream
       rawBody = await new Promise((resolve, reject) => {
         const chunks = [];
         req.on('data', (chunk) => chunks.push(chunk));
         req.on('end', () => resolve(Buffer.concat(chunks)));
         req.on('error', reject);
       });
-      console.log('Using raw stream, length:', rawBody.length);
+      console.log(`[webhook ${WEBHOOK_VERSION}] Read from stream, length: ${rawBody.length}`);
     }
 
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-    console.log('Webhook signature verified successfully');
+    console.log(`[webhook ${WEBHOOK_VERSION}] Signature verified successfully`);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error(`[webhook ${WEBHOOK_VERSION}] Verification failed:`, err.message);
+    return res.status(400).send(`[${WEBHOOK_VERSION}] Webhook Error: ${err.message}`);
   }
 
   // Handle the event
@@ -94,10 +106,3 @@ module.exports = async (req, res) => {
   res.status(200).json({ received: true });
 };
 
-// Disable Vercel's automatic body parsing — Stripe needs the raw body
-// for webhook signature verification
-module.exports.config = {
-  api: {
-    bodyParser: false,
-  },
-};
