@@ -577,7 +577,7 @@
       // Update modal header
       const selected = document.querySelector('input[name="priceTier"]:checked');
       document.getElementById('modalProductName').textContent = selected.dataset.label;
-      document.getElementById('modalPrice').textContent = `$${selected.dataset.price}`;
+      document.getElementById('modalPrice').textContent = '$0.01'; // testing price
       
       // Show modal
       stripeModal.classList.add('active');
