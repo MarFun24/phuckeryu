@@ -38,31 +38,41 @@ module.exports = async (req, res) => {
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
     if (n8nWebhookUrl) {
       try {
-        await fetch(n8nWebhookUrl, {
+        const n8nPayload = {
+          email: buyerEmail,
+          buyerEmail: buyerEmail,
+          recipientEmail: metadata.recipientEmail || '',
+          firstName: metadata.firstName,
+          lastName: metadata.lastName,
+          certificationDate: metadata.certificationDate,
+          degreeLevel: metadata.degreeLevel,
+          faculty: metadata.faculty,
+          achievement: metadata.achievement,
+          style: metadata.style,
+          paymentIntentId: paymentIntent.id,
+          amountPaid: paymentIntent.amount / 100,
+        };
+        console.log('Sending to n8n:', JSON.stringify(n8nPayload));
+
+        const n8nResponse = await fetch(n8nWebhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: buyerEmail,
-            buyerEmail: buyerEmail,
-            recipientEmail: metadata.recipientEmail || '',
-            firstName: metadata.firstName,
-            lastName: metadata.lastName,
-            certificationDate: metadata.certificationDate,
-            degreeLevel: metadata.degreeLevel,
-            faculty: metadata.faculty,
-            achievement: metadata.achievement,
-            style: metadata.style,
-            paymentIntentId: paymentIntent.id,
-            amountPaid: paymentIntent.amount / 100,
-          }),
+          body: JSON.stringify(n8nPayload),
         });
-        console.log('Order data sent to n8n successfully');
+
+        const responseText = await n8nResponse.text();
+
+        if (!n8nResponse.ok) {
+          console.error(`n8n responded with ${n8nResponse.status}: ${responseText}`);
+        } else {
+          console.log('Order data sent to n8n successfully. Response:', responseText);
+        }
       } catch (n8nError) {
         console.error('Failed to send to n8n:', n8nError.message);
         // Don't fail the webhook — Stripe needs a 200 response
       }
     } else {
-      console.warn('N8N_WEBHOOK_URL not configured — skipping n8n notification');
+      console.error('N8N_WEBHOOK_URL not configured — certificate will NOT be generated or emailed');
     }
   }
 
