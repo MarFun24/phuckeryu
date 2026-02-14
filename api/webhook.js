@@ -1,15 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Read raw body from the request stream
-function getRawBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
-  });
-}
-
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -21,19 +11,25 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    // Try reading raw body from stream first
-    let rawBody = await getRawBody(req);
-
-    // If Vercel's body parser already consumed the stream, reconstruct from req.body
-    if (rawBody.length === 0 && req.body) {
-      console.log('Stream empty — reconstructing raw body from req.body');
-      rawBody = Buffer.from(
-        typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
-      );
+    // Vercel auto-parses JSON bodies and the bodyParser:false config
+    // is ignored due to ESM-to-CJS compilation. Use req.body directly.
+    let rawBody;
+    if (req.body) {
+      rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+      console.log('Using Vercel-parsed req.body, length:', rawBody.length);
+    } else {
+      // Fallback: read from stream if body parser is actually disabled
+      rawBody = await new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', (chunk) => chunks.push(chunk));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+      });
+      console.log('Using raw stream, length:', rawBody.length);
     }
 
-    console.log('Webhook received — raw body length:', rawBody.length);
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    console.log('Webhook signature verified successfully');
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
