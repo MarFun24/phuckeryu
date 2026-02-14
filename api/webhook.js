@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Read raw body directly from the request stream (no external dependencies)
+// Read raw body from the request stream
 function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -21,17 +21,18 @@ module.exports = async (req, res) => {
   let event;
 
   try {
-    const rawBody = await getRawBody(req);
-    console.log('Webhook received — raw body length:', rawBody.length);
-    console.log('Stripe signature header:', sig ? 'present' : 'MISSING');
-    console.log('Webhook secret configured:', webhookSecret ? 'yes' : 'NO');
+    // Try reading raw body from stream first
+    let rawBody = await getRawBody(req);
 
-    if (rawBody.length === 0) {
-      console.error('Raw body is EMPTY — Vercel body parser likely consumed the stream');
-      console.error('req.body exists:', !!req.body);
-      console.error('req.body type:', typeof req.body);
+    // If Vercel's body parser already consumed the stream, reconstruct from req.body
+    if (rawBody.length === 0 && req.body) {
+      console.log('Stream empty — reconstructing raw body from req.body');
+      rawBody = Buffer.from(
+        typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
+      );
     }
 
+    console.log('Webhook received — raw body length:', rawBody.length);
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
