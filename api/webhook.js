@@ -24,10 +24,11 @@ module.exports = async (req, res) => {
 
     // Extract metadata and customer email
     const metadata = paymentIntent.metadata;
-    const customerEmail = paymentIntent.receipt_email || paymentIntent.charges?.data[0]?.billing_details?.email;
+    const buyerEmail = metadata.buyerEmail || paymentIntent.receipt_email || paymentIntent.charges?.data[0]?.billing_details?.email;
 
     console.log('Payment successful!');
-    console.log('Customer email:', customerEmail);
+    console.log('Buyer email:', buyerEmail);
+    console.log('Recipient email:', metadata.recipientEmail);
     console.log('Order details:', metadata);
     console.log('Amount paid:', paymentIntent.amount / 100);
 
@@ -39,7 +40,8 @@ module.exports = async (req, res) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: customerEmail,
+            email: buyerEmail,
+            buyerEmail: buyerEmail,
             recipientEmail: metadata.recipientEmail || '',
             firstName: metadata.firstName,
             lastName: metadata.lastName,
