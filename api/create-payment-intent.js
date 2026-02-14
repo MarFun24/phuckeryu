@@ -42,9 +42,7 @@ module.exports = async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 999, // $9.99 in cents
       currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      payment_method_types: ['card'],
       receipt_email: buyerEmail,
       metadata: {
         firstName,
