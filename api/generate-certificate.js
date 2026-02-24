@@ -73,9 +73,9 @@ const STYLE_LAYOUTS = {
   },
   // Lil Phuckers (Kids) — friendly serif, different ordering
   kids: {
-    name:        { y: 280, fontSize: 32, font: 'TimesRoman' },
-    achievement: { y: 248, fontSize: 13, font: 'TimesRomanItalic' },
-    degree:      { y: 210, fontSize: 22, font: 'TimesRomanBold' },
+    name:        { y: 320, fontSize: 32, font: 'TimesRoman' },
+    achievement: { y: 285, fontSize: 13, font: 'TimesRomanItalic' },
+    degree:      { y: 250, fontSize: 22, font: 'TimesRomanBold' },
   },
 };
 
