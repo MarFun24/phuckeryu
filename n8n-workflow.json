@@ -1,0 +1,233 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "phuckery-order",
+        "options": {}
+      },
+      "id": "a41c9e72-cbe3-43ed-950d-f4ccfc15d4bc",
+      "name": "Order Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        112
+      ],
+      "webhookId": "phuckery-order"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.vercelUrl || 'https://phuckeryu.vercel.app' }}/api/generate-certificate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ firstName: $json.body.firstName, lastName: $json.body.lastName, certificationDate: $json.body.certificationDate, degreeLevel: $json.body.degreeLevel, faculty: $json.body.faculty, achievement: $json.body.achievement, style: $json.body.style }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "certificate"
+            }
+          }
+        }
+      },
+      "id": "0b0e0e8f-e222-4d9f-9eaa-8b76af8f0db7",
+      "name": "Generate Certificate PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-recipient",
+              "leftValue": "={{ $('Order Webhook').item.json.body.recipientEmail }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d2f54f71-e56e-42a1-8ef9-90a41d70841d",
+      "name": "Has Separate Recipient?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Order Webhook').item.json.body.recipientEmail }}",
+        "subject": "You've Been Awarded a Degree from the University of Phuckery!",
+        "message": "<div style=\"font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n  <div style=\"text-align: center; background: linear-gradient(135deg, #01538B 0%, #023a61 100%); padding: 30px; border-radius: 12px 12px 0 0;\">\n    <h1 style=\"color: white; margin: 0; font-size: 28px;\">University of Phuckery</h1>\n    <p style=\"color: #93c5fd; margin: 8px 0 0;\">Office of Distinguished Nonsense</p>\n  </div>\n  <div style=\"background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;\">\n    <p style=\"font-size: 16px; color: #374151;\">Dear Esteemed Individual,</p>\n    <p style=\"font-size: 16px; color: #374151;\">It is our solemn duty and absolute pleasure to inform you that a prestigious degree has been bestowed upon someone very deserving — and that someone is <strong>you</strong>.</p>\n    <p style=\"font-size: 16px; color: #374151;\">Please find the official certificate attached to this email. Frame it, flaunt it, or just let it marinate in your inbox — either way, it's official now.</p>\n    <p style=\"font-size: 16px; color: #374151;\">Open the attached PDF to see your full degree details.</p>\n    <p style=\"font-size: 14px; color: #9ca3af; margin-top: 30px; text-align: center;\">This certificate was sent with love (and a little bit of petty) from the University of Phuckery.</p>\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "certificate"
+              }
+            ]
+          }
+        }
+      },
+      "id": "5ad9ab35-80e3-4dad-bf2f-95e6065cfee2",
+      "name": "Email to Recipient",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "21af7042-1bbb-463c-a925-1062fb58ab50",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RLBTrfrjF2rL8iqY",
+          "name": "Phuckery Email"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Order Webhook').item.json.body.email }}",
+        "subject": "Your University of Phuckery Order is Complete!",
+        "message": "<div style=\"font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n  <div style=\"text-align: center; background: linear-gradient(135deg, #01538B 0%, #023a61 100%); padding: 30px; border-radius: 12px 12px 0 0;\">\n    <h1 style=\"color: white; margin: 0; font-size: 28px;\">University of Phuckery</h1>\n    <p style=\"color: #93c5fd; margin: 8px 0 0;\">Order Confirmation</p>\n  </div>\n  <div style=\"background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;\">\n    <p style=\"font-size: 16px; color: #374151;\">Your order has been processed and the certificate has been delivered!</p>\n    <div style=\"padding: 15px; margin: 20px 0; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #22c55e;\">\n      <p style=\"margin: 0; color: #374151; font-size: 16px;\">The degree certificate has been sent to the recipient's email. They should receive it shortly.</p>\n    </div>\n    <p style=\"font-size: 16px; color: #374151;\">The phuckery has been delivered. Your work here is done.</p>\n    <p style=\"font-size: 14px; color: #9ca3af; margin-top: 30px; text-align: center;\">University of Phuckery — Degrees That Hit Different</p>\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "69af738e-761b-4d57-8198-99ad75667088",
+      "name": "Notify Buyer (Sent to Someone)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        0
+      ],
+      "webhookId": "4833b086-51ef-44ac-be6b-ddfcf26fa965",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RLBTrfrjF2rL8iqY",
+          "name": "Phuckery Email"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Order Webhook').item.json.body.email }}",
+        "subject": "Your University of Phuckery Degree Has Arrived!",
+        "message": "<div style=\"font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n  <div style=\"text-align: center; background: linear-gradient(135deg, #01538B 0%, #023a61 100%); padding: 30px; border-radius: 12px 12px 0 0;\">\n    <h1 style=\"color: white; margin: 0; font-size: 28px;\">University of Phuckery</h1>\n    <p style=\"color: #93c5fd; margin: 8px 0 0;\">Office of Distinguished Nonsense</p>\n  </div>\n  <div style=\"background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;\">\n    <p style=\"font-size: 16px; color: #374151;\">Congratulations!</p>\n    <p style=\"font-size: 16px; color: #374151;\">Your prestigious degree is ready. Please find your official certificate attached to this email.</p>\n    <p style=\"font-size: 16px; color: #374151;\">Frame it, flaunt it, or just let it marinate in your inbox — either way, it's official now.</p>\n    <p style=\"font-size: 16px; color: #374151;\">Open the attached PDF to see your full degree details.</p>\n    <p style=\"font-size: 14px; color: #9ca3af; margin-top: 30px; text-align: center;\">University of Phuckery — Degrees That Hit Different</p>\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "certificate"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d17cc994-b950-4948-a2bf-38fae3c22ad6",
+      "name": "Email to Buyer (Self-Purchase)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "webhookId": "b8765a8c-2f08-4f56-88cc-201a65a1aac4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RLBTrfrjF2rL8iqY",
+          "name": "Phuckery Email"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Order Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Certificate PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Certificate PDF": {
+      "main": [
+        [
+          {
+            "node": "Has Separate Recipient?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Separate Recipient?": {
+      "main": [
+        [
+          {
+            "node": "Email to Recipient",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email to Buyer (Self-Purchase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email to Recipient": {
+      "main": [
+        [
+          {
+            "node": "Notify Buyer (Sent to Someone)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cef9747a17d41c28a81fd55f4bb3cf9f117bc62527e5ceb3a7bee14f9f6976ce"
+  }
+}

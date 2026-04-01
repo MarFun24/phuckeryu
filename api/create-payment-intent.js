@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
       degreeLevel,
       faculty,
       achievement,
+      buyerEmail,
       recipientEmail,
       style,
       priceId
@@ -33,13 +34,16 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    if (!buyerEmail) {
+      return res.status(400).json({ error: 'Email address is required' });
+    }
+
     // Create Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 999, // $9.99 in cents
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      amount: 999, // $9.99 CAD
+      currency: 'cad',
+      payment_method_types: ['card'],
+      receipt_email: buyerEmail,
       metadata: {
         firstName,
         lastName,
@@ -47,6 +51,7 @@ module.exports = async (req, res) => {
         degreeLevel,
         faculty,
         achievement,
+        buyerEmail,
         recipientEmail: recipientEmail || '',
         style,
       },
