@@ -278,7 +278,7 @@
             <label class="block text-xs font-semibold mb-2" style="color: #3A3C3E;">Choose Your Package</label>
             <div class="space-y-2" id="priceTiers">
               <label class="price-option flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                <input type="radio" name="priceTier" value="digital" data-price="9.99" data-label="Digital Download" class="mr-3 accent-blue-600" checked>
+                <input type="radio" name="priceTier" value="digital" data-price="0.80" data-label="Digital Download" class="mr-3 accent-blue-600" checked>
                 <div class="flex-1">
                   <div class="font-semibold text-sm" style="color: #3A3C3E;">Digital Download</div>
                   <div class="text-xs text-gray-500">High-res PDF delivered via email</div>
@@ -561,7 +561,7 @@
         buyerEmail: buyerEmail,
         recipientEmail: document.getElementById('recipientEmail').value,
         style: currentStyle,
-        priceId: document.querySelector('input[name="priceTier"]:checked').dataset.price === '9.99' ? 'price_1SyyrbPVCYNIQbDAltXaZL6q' : ''
+        priceId: document.querySelector('input[name="priceTier"]:checked').dataset.price === '0.80' ? 'price_1SyyrbPVCYNIQbDAltXaZL6q' : ''
       };
 
       // Validate
@@ -579,7 +579,7 @@
       // Update modal header
       const selected = document.querySelector('input[name="priceTier"]:checked');
       document.getElementById('modalProductName').textContent = selected.dataset.label;
-      document.getElementById('modalPrice').textContent = '$9.99 CAD'; // testing price
+      document.getElementById('modalPrice').textContent = '$0.80 CAD';
       
       // Show modal
       stripeModal.classList.add('active');
