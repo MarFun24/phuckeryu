@@ -45,6 +45,9 @@ module.exports = async (req, res) => {
       payment_method_types: ['card'],
       receipt_email: buyerEmail,
       metadata: {
+        // n8n branches on this. Set it explicitly on the digital path too —
+        // an undefined value there is a silent misroute waiting to happen.
+        fulfillment: 'digital',
         firstName,
         lastName,
         certificationDate,
