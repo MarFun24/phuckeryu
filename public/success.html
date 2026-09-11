@@ -55,7 +55,7 @@
 
           <div class="bg-gray-50 rounded-lg p-5 mb-6 text-left">
             <h3 class="text-sm font-semibold mb-3" style="color: #3A3C3E;">What happens next:</h3>
-            <ul class="space-y-2 text-sm text-gray-600">
+            <ul class="space-y-2 text-sm text-gray-600" id="next-steps">
               <li class="flex items-start gap-2">
                 <span class="text-green-500 mt-0.5">&#10003;</span>
                 Your personalized certificate is being generated
@@ -104,6 +104,14 @@
     async function checkPaymentStatus() {
       const params = new URLSearchParams(window.location.search);
       const clientSecret = params.get('payment_intent_client_secret');
+      const sessionId = params.get('session_id');
+
+      // Printed orders come back from Stripe Checkout, which only redirects here
+      // after a successful payment — there's no client secret to re-check.
+      if (sessionId) {
+        showPrintedSuccess();
+        return;
+      }
 
       if (!clientSecret) {
         showError('No payment information found. If you completed a purchase, your certificate is still on its way.');
@@ -131,6 +139,37 @@
         console.error('Error checking payment status:', err);
         showError('Unable to verify payment status. If you were charged, your certificate is still being processed.');
       }
+    }
+
+    /**
+     * Printed orders: no PDF lands in the buyer's inbox, so the copy has to set
+     * a mailbox expectation instead of an inbox one.
+     */
+    function showPrintedSuccess() {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('success-state').classList.remove('hidden');
+
+      document.querySelector('#success-state p.text-gray-600').textContent =
+        'Your degree is heading to the printing press.';
+
+      const steps = [
+        'Your certificate is being printed on heavy parchment stock',
+        'It gets a gold embossed seal, tissue wrap and a navy display folder',
+        'It ships within Canada — allow 1–2 weeks for it to reach your mailbox',
+      ];
+
+      document.getElementById('next-steps').innerHTML = steps
+        .map(step =>
+          '<li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">&#10003;</span>' +
+          step +
+          '</li>'
+        )
+        .join('');
+
+      const notice = document.getElementById('email-notice');
+      notice.classList.remove('hidden');
+      document.getElementById('email-notice-text').textContent =
+        'A confirmation email is on its way. The certificate itself arrives by post — nothing to download.';
     }
 
     function showSuccess(paymentIntent) {

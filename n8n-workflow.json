@@ -78,8 +78,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -240,
-        112
+        -20,
+        180
       ]
     },
     {
@@ -103,8 +103,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        0,
-        0
+        220,
+        100
       ],
       "webhookId": "21af7042-1bbb-463c-a925-1062fb58ab50",
       "credentials": {
@@ -128,8 +128,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        240,
-        0
+        460,
+        100
       ],
       "webhookId": "4833b086-51ef-44ac-be6b-ddfcf26fa965",
       "credentials": {
@@ -160,14 +160,106 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        0,
-        224
+        220,
+        320
       ],
       "webhookId": "b8765a8c-2f08-4f56-88cc-201a65a1aac4",
       "credentials": {
         "gmailOAuth2": {
           "id": "RLBTrfrjF2rL8iqY",
           "name": "Phuckery Email"
+        }
+      }
+    },
+    {
+      "id": "b387a195-1eb0-4440-aa26-370d8adf926b",
+      "name": "Is Physical?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -260,
+        112
+      ],
+      "notes": "Physical orders carry fulfillment=physical. Anything else (including a missing field) falls through to the existing digital path.",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "is-physical",
+              "leftValue": "={{ $('Order Webhook').item.json.body.fulfillment || '' }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "physical"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "541e2ed7-d035-489d-b618-82efd9fb6f60",
+      "name": "Print Order to Helen",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -20,
+        -160
+      ],
+      "webhookId": "883ee152-6a42-489b-bd23-540c250e419f",
+      "notes": "Everything needed to print and ship without replying to ask.",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RLBTrfrjF2rL8iqY",
+          "name": "Phuckery Email"
+        }
+      },
+      "parameters": {
+        "sendTo": "phuckeryu@gmail.com",
+        "subject": "=PRINT ORDER: {{ $('Order Webhook').item.json.body.degreeLevel }} for {{ $('Order Webhook').item.json.body.firstName }} {{ $('Order Webhook').item.json.body.lastName }}",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><title>Print Order</title></head>\n<body style=\"margin:0;padding:0;background-color:#f4f4f4;font-family:Georgia,serif;\">\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background-color:#f4f4f4;\">\n<tr><td align=\"center\" style=\"padding:20px 0;\">\n<table role=\"presentation\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);\">\n<tr><td align=\"center\" style=\"background:#01538B;background:linear-gradient(135deg,#01538B 0%,#023a61 100%);padding:30px;\">\n<h1 style=\"color:#ffffff;margin:0;font-size:24px;line-height:1.2;\">Print Order</h1>\n<p style=\"color:#93c5fd;margin:8px 0 0;font-size:14px;letter-spacing:1px;\">University of Phuckery | Fulfilment</p>\n</td></tr>\n<tr><td style=\"padding:30px;color:#374151;font-size:15px;line-height:1.6;\">\n<p style=\"margin:0 0 24px;\">A printed certificate has been paid for. The print-ready PDF is attached to this email.</p>\n<h2 style=\"font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#01538B;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px;\">Print These Details</h2>\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"font-size:15px;color:#374151;margin:0 0 28px;\">\n<tr><td width=\"38%\" style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Name on certificate</td><td style=\"padding:6px 0;font-weight:bold;\">{{ $('Order Webhook').item.json.body.firstName }} {{ $('Order Webhook').item.json.body.lastName }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Degree level</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.degreeLevel }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Faculty</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.faculty }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Achievement</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.achievement }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Certification date</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.certificationDate }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Template style</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.style }}</td></tr>\n</table>\n<h2 style=\"font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#01538B;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px;\">Ship To</h2>\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:0 0 28px;\">\n<tr><td style=\"padding:16px;background:#f9fafb;border-left:4px solid #01538B;border-radius:4px;font-size:16px;line-height:1.7;color:#111827;\">\n<strong>{{ $('Order Webhook').item.json.body.shippingName }}</strong><br>\n{{ $('Order Webhook').item.json.body.shippingLine1 }}<br>\n{{ $('Order Webhook').item.json.body.shippingLine2 ? $('Order Webhook').item.json.body.shippingLine2 + '<br>' : '' }}{{ $('Order Webhook').item.json.body.shippingCity }}, {{ $('Order Webhook').item.json.body.shippingState }} {{ $('Order Webhook').item.json.body.shippingPostalCode }}<br>\n{{ $('Order Webhook').item.json.body.shippingCountry }}<br>\n<span style=\"font-size:14px;color:#6b7280;\">Phone (for the courier): {{ $('Order Webhook').item.json.body.shippingPhone || 'Not provided' }}</span>\n</td></tr>\n</table>\n<h2 style=\"font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#01538B;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px;\">Buyer</h2>\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"font-size:15px;color:#374151;\">\n<tr><td width=\"38%\" style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Email</td><td style=\"padding:6px 0;\">{{ $('Order Webhook').item.json.body.email }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Paid</td><td style=\"padding:6px 0;\">CAD ${{ $('Order Webhook').item.json.body.amountPaid }}</td></tr>\n<tr><td style=\"padding:6px 0;color:#6b7280;vertical-align:top;\">Stripe reference</td><td style=\"padding:6px 0;font-size:13px;color:#6b7280;\">{{ $('Order Webhook').item.json.body.checkoutSessionId || $('Order Webhook').item.json.body.paymentIntentId }}</td></tr>\n</table>\n<p style=\"margin:24px 0 0;font-size:14px;color:#6b7280;\">If the address looks wrong or incomplete, reply straight to the buyer at the email above.</p>\n</td></tr>\n<tr><td align=\"center\" style=\"padding:20px 30px;background-color:#f9fafb;border-top:1px solid #e5e7eb;font-size:13px;color:#9ca3af;\">University of Phuckery | Office of Distinguished Nonsense</td></tr>\n</table>\n</td></tr></table></body></html>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "certificate"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "064c8c7a-17f2-4b2e-b9fe-5dbc2067cafe",
+      "name": "Shipping Confirmation to Buyer",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        -160
+      ],
+      "webhookId": "6b09db91-f28a-48dd-94f8-d1e3f014b6e7",
+      "notes": "Deliberately has NO attachment - the buyer is paying for the physical object.",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RLBTrfrjF2rL8iqY",
+          "name": "Phuckery Email"
+        }
+      },
+      "parameters": {
+        "sendTo": "={{ $('Order Webhook').item.json.body.email }}",
+        "subject": "Your Degree Has Entered Physical Production",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Order Confirmed</title></head>\n<body style=\"margin:0;padding:0;background-color:#f4f4f4;font-family:Georgia,serif;\">\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background-color:#f4f4f4;\">\n<tr><td align=\"center\" style=\"padding:20px 0;\">\n<table role=\"presentation\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);\">\n<tr><td align=\"center\" style=\"background:#01538B;background:linear-gradient(135deg,#01538B 0%,#023a61 100%);padding:40px 30px;\">\n<h1 style=\"color:#ffffff;margin:0;font-size:28px;line-height:1.2;\">University of Phuckery</h1>\n<p style=\"color:#93c5fd;margin:8px 0 0;font-size:16px;letter-spacing:1px;\">Office of Distinguished Nonsense</p>\n</td></tr>\n<tr><td style=\"padding:40px 30px;color:#374151;font-size:16px;line-height:1.6;\">\n<p style=\"margin:0 0 20px;\">Congratulations are in order, and this time they come with postage.</p>\n<p style=\"margin:0 0 20px;\">The Office of Distinguished Nonsense confirms that your order has been received, your payment has cleared, and the following degree has been referred to our Department of Physical Manufacture:</p>\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:0 0 24px;\">\n<tr><td style=\"padding:20px;background:#f9fafb;border-left:4px solid #01538B;border-radius:4px;\">\n<p style=\"margin:0 0 6px;font-size:18px;font-weight:bold;color:#01538B;\">{{ $('Order Webhook').item.json.body.degreeLevel }}</p>\n<p style=\"margin:0 0 6px;font-size:16px;color:#374151;\">Conferred upon <strong>{{ $('Order Webhook').item.json.body.firstName }} {{ $('Order Webhook').item.json.body.lastName }}</strong></p>\n<p style=\"margin:0;font-size:14px;color:#6b7280;\">{{ $('Order Webhook').item.json.body.faculty }}</p>\n</td></tr>\n</table>\n<p style=\"margin:0 0 20px;\">Your certificate is now being printed on heavy parchment stock, pressed with a gold embossed PhuckeryU seal, wrapped in tissue paper, sealed again (we are thorough), and laid to rest in a regal navy display folder. It measures 8.5&quot; by 11&quot;, which is to say it is sized for framing by anyone with the courage to hang it.</p>\n<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:0 0 24px;\">\n<tr><td style=\"padding:16px 20px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;\">\n<p style=\"margin:0;font-size:15px;color:#1e3a5f;\"><strong>Please allow 1&ndash;2 weeks for delivery.</strong> Real objects move at the speed of the postal service, not the internet. Shipping within Canada is included in what you have already paid; there is nothing further to settle.</p>\n</td></tr>\n</table>\n<p style=\"margin:0 0 20px;\">You will note that nothing is attached to this email. This is deliberate. You have purchased an object, not a file, and the University does not believe in spoiling the reveal.</p>\n<p style=\"margin:0 0 20px;\">We recommend clearing a modest space on a wall, or on a mantel, or wherever you display the things you would like people to ask about.</p>\n<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:30px auto;\">\n<tr><td align=\"center\" style=\"border-radius:8px;background-color:#01538B;\">\n<a href=\"https://www.phuckeryu.com/\" target=\"_blank\" style=\"font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;padding:15px 25px;display:inline-block;border-radius:8px;border:1px solid #01538B;\">Bestow Another Degree</a>\n</td></tr>\n</table>\n<p style=\"margin:0 0 20px;font-size:15px;\">Should your certificate fail to appear within a fortnight, reply to this email and someone in Fulfilment will be held accountable in a manner of our choosing.</p>\n<p style=\"margin:30px 0 0;\">With institutional pride and very little oversight,</p>\n<p style=\"margin:5px 0 0;font-weight:bold;\">Dean Vlad X &amp; Chancellor Eleni X</p>\n</td></tr>\n<tr><td align=\"center\" style=\"padding:20px 30px;background-color:#f9fafb;border-top:1px solid #e5e7eb;font-size:14px;color:#9ca3af;\">University of Phuckery | Office of Distinguished Nonsense</td></tr>\n</table>\n</td></tr></table></body></html>",
+        "options": {
+          "appendAttribution": false
         }
       }
     }
@@ -188,7 +280,7 @@
       "main": [
         [
           {
-            "node": "Has Separate Recipient?",
+            "node": "Is Physical?",
             "type": "main",
             "index": 0
           }
@@ -218,6 +310,35 @@
         [
           {
             "node": "Notify Buyer (Sent to Someone)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Physical?": {
+      "main": [
+        [
+          {
+            "node": "Print Order to Helen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has Separate Recipient?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Print Order to Helen": {
+      "main": [
+        [
+          {
+            "node": "Shipping Confirmation to Buyer",
             "type": "main",
             "index": 0
           }

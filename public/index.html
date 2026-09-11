@@ -166,6 +166,24 @@
       cursor: not-allowed !important;
       pointer-events: none;
     }
+    .new-badge {
+      background: linear-gradient(135deg, #01538B 0%, #023a61 100%);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .product-shot {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #f3f4f6;
+    }
     .coming-soon-badge {
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       color: white;
@@ -263,10 +281,30 @@
             <textarea id="achievementCustom" rows="2" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none hidden" placeholder="Write your custom achievement..."></textarea>
           </div>
 
-          <div>
+          <!-- Digital orders only: physical orders ship to one address, entered at checkout. -->
+          <div id="recipientEmailField">
             <label class="block text-xs font-semibold mb-1.5" style="color: #3A3C3E;">Recipient Email Address <span class="text-red-400">*</span></label>
             <input type="email" id="recipientEmail" placeholder="recipient@example.com" class="form-input w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
             <p class="text-xs text-gray-500 mt-1.5 leading-relaxed">Send the certificate to someone else anonymously — let the phuckery fly.</p>
+          </div>
+
+          <!-- Physical orders only: sets delivery expectations before purchase. -->
+          <div id="shippingNotice" class="hidden rounded-lg border-2 border-blue-100 bg-blue-50 p-3">
+            <div class="flex items-start gap-2">
+              <span class="text-base leading-none mt-0.5">📦</span>
+              <div>
+                <p class="text-xs font-semibold mb-1" style="color: #01538B;">This one arrives by mail, not by inbox</p>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                  Your certificate is printed, sealed, wrapped and posted by hand. Allow
+                  <strong>1&ndash;2 weeks</strong> for it to reach your mailbox. Shipping is included in the price,
+                  and we currently ship within <strong>Canada only</strong>.
+                </p>
+                <p class="text-xs text-gray-600 leading-relaxed mt-1.5">
+                  You'll enter the delivery address and a phone number for the courier on the next screen &mdash;
+                  ship it to yourself, or straight to the deserving party.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -286,14 +324,18 @@
                 </div>
                 <div class="font-bold text-blue-600">$9.99</div>
               </label>
-              <label class="price-option disabled flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-not-allowed">
-                <input type="radio" name="priceTier" value="printed" data-price="39.99" data-label="Printed Diploma" class="mr-3 accent-blue-600" disabled>
+              <label class="price-option flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                <input type="radio" name="priceTier" value="printed" data-price="32.99" data-label="Printed Certificate (Shipped)" class="mr-3 accent-blue-600">
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <div class="font-semibold text-sm" style="color: #3A3C3E;">Printed Diploma</div>
-                    <span class="coming-soon-badge">Coming Soon</span>
+                    <div class="font-semibold text-sm" style="color: #3A3C3E;">Printed Certificate</div>
+                    <span class="new-badge">New</span>
                   </div>
-                  <div class="text-xs text-gray-500">Premium cardstock, shipped to you</div>
+                  <div class="text-xs text-gray-500">Parchment stock &amp; gold seal, mailed to you</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-blue-600">$32.99</div>
+                  <div class="text-[10px] text-gray-500 leading-tight">shipping incl.</div>
                 </div>
               </label>
               <label class="price-option disabled flex items-center p-3 rounded-lg border-2 border-gray-200 cursor-not-allowed">
@@ -379,6 +421,40 @@
         <p class="text-xs text-center mt-4" style="color:#3A3C3E;opacity:0.6;">
           Template preview. Final diploma will be customized with your information.
         </p>
+
+        <!-- Physical orders only. Hidden entirely if the photos aren't deployed yet,
+             so a missing file never shows a broken image on a live sales page. -->
+        <div id="printedProductShowcase" class="hidden mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-base font-bold mb-1" style="color: #3A3C3E;">What actually turns up in the post</h3>
+          <p class="text-xs text-gray-500 mb-4">
+            Printed on heavy parchment stock with a gold embossed PhuckeryU seal, wrapped in tissue and
+            presented in a navy display folder. 8.5&quot; &times; 11&quot;, ready to frame.
+          </p>
+
+          <div id="productShots" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <figure>
+              <img src="./CERTIFICATE_ON_DISPLAY.jpg" alt="The printed certificate displayed in its navy folder" class="product-shot" loading="lazy">
+              <figcaption class="text-[11px] text-gray-500 mt-1.5 text-center">In its navy display folder</figcaption>
+            </figure>
+            <figure>
+              <img src="./UNWRAPPED_CERTIFICATE.jpg" alt="The certificate unwrapped from its tissue paper" class="product-shot" loading="lazy">
+              <figcaption class="text-[11px] text-gray-500 mt-1.5 text-center">Unwrapped from the tissue</figcaption>
+            </figure>
+            <figure>
+              <img src="./STICKER_ON_WHITE_PAPER.jpg" alt="The gold embossed PhuckeryU seal" class="product-shot" loading="lazy">
+              <figcaption class="text-[11px] text-gray-500 mt-1.5 text-center">The gold embossed seal</figcaption>
+            </figure>
+          </div>
+
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-5 text-xs text-gray-600">
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> Heavy high-quality parchment stock</li>
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> Gold embossed seal with PhuckeryU logo</li>
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> Regal navy blue folder for display</li>
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> Wrapped in tissue, affixed with the PhuckeryU seal</li>
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> 8.5&quot; &times; 11&quot;, sized for easy framing</li>
+            <li class="flex gap-2"><span style="color:#01538B;">&#10003;</span> Shipping included &mdash; within Canada</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -529,16 +605,135 @@
       });
     });
     
-    // Price tier updates (only fires for enabled options)
+    // ===========================================
+    // FULFILLMENT MODE (digital vs printed)
+    // ===========================================
+    const recipientEmailField = document.getElementById('recipientEmailField');
+    const recipientEmailInput = document.getElementById('recipientEmail');
+    const shippingNotice = document.getElementById('shippingNotice');
+    const printedProductShowcase = document.getElementById('printedProductShowcase');
+    // "Lil Phuckers" is a digital-only template — it can't be ordered in print.
+    const kidsStyleBtn = document.querySelector('.style-btn[data-style="kids"]');
+
+    // Flipped to false if any product photo fails to load (see below).
+    let productShotsAvailable = true;
+
+    function selectedTier() {
+      return document.querySelector('input[name="priceTier"]:checked');
+    }
+
+    function isPrintedOrder() {
+      return selectedTier()?.value === 'printed';
+    }
+
+    function applyFulfillmentMode() {
+      const tier = selectedTier();
+      const printed = isPrintedOrder();
+
+      checkoutBtn.textContent = `Purchase for $${tier.dataset.price}`;
+
+      // Physical orders ship to a single address, so there's no second email to
+      // collect. Clear it too, so a value typed before switching can't leak into
+      // the order and send a gift PDF the buyer didn't pay for.
+      recipientEmailField.classList.toggle('hidden', printed);
+      if (printed) recipientEmailInput.value = '';
+
+      shippingNotice.classList.toggle('hidden', !printed);
+      printedProductShowcase.classList.toggle('hidden', !printed || !productShotsAvailable);
+
+      kidsStyleBtn.disabled = printed;
+      kidsStyleBtn.classList.toggle('opacity-40', printed);
+      kidsStyleBtn.classList.toggle('cursor-not-allowed', printed);
+      kidsStyleBtn.title = printed ? 'Lil Phuckers is available as a digital download only' : '';
+
+      // Don't let a printed order sit on a template we can't print.
+      if (printed && currentStyle === 'kids') {
+        document.querySelector('.style-btn[data-style="classic"]').click();
+      }
+    }
+
     document.querySelectorAll('input[name="priceTier"]:not([disabled])').forEach(input => {
-      input.addEventListener('change', () => {
-        const price = input.dataset.price;
-        checkoutBtn.textContent = `Purchase for $${price}`;
+      input.addEventListener('change', applyFulfillmentMode);
+    });
+
+    // Hide the product gallery rather than show broken images if the photos
+    // haven't been deployed to /public yet.
+    document.querySelectorAll('#productShots img').forEach(img => {
+      img.addEventListener('error', () => {
+        productShotsAvailable = false;
+        printedProductShowcase.classList.add('hidden');
       });
     });
-    
-    // Checkout
-    checkoutBtn.addEventListener('click', openStripeModal);
+
+    // ===========================================
+    // CHECKOUT
+    // ===========================================
+    checkoutBtn.addEventListener('click', () => {
+      if (isPrintedOrder()) {
+        startPrintedCheckout();
+      } else {
+        openStripeModal();
+      }
+    });
+
+    /**
+     * Collect the degree details, then hand off to Stripe Checkout — which is
+     * what collects the shipping address and phone number for physical orders.
+     */
+    async function startPrintedCheckout() {
+      const buyerEmail = document.getElementById('buyerEmail').value.trim();
+      const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        certificationDate: datePreview.textContent.replace('Will appear as: ', ''),
+        degreeLevel: document.getElementById('degreeLevel').value,
+        faculty: document.getElementById('faculty').value,
+        achievement: achievementSelect.value === 'custom' ? achievementCustom.value : achievementSelect.value,
+        style: currentStyle,
+        buyerEmail: buyerEmail,
+      };
+
+      if (!formData.firstName || !formData.lastName || !formData.certificationDate) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (!buyerEmail) {
+        alert('Please enter your email address so we can send your order confirmation.');
+        document.getElementById('buyerEmail').focus();
+        return;
+      }
+
+      if (!formData.achievement) {
+        alert('Please choose or write an achievement for the certificate.');
+        return;
+      }
+
+      const originalLabel = checkoutBtn.textContent;
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = 'Redirecting to checkout…';
+
+      try {
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.url) {
+          throw new Error(data.error || 'Failed to start checkout');
+        }
+
+        window.location.assign(data.url);
+      } catch (error) {
+        console.error('Checkout session error:', error);
+        alert(`We couldn't start checkout: ${error.message}. Please try again.`);
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = originalLabel;
+      }
+    }
     
     // ===========================================
     // STRIPE PAYMENT ELEMENT
@@ -788,6 +983,7 @@
     // Show classic template by default and trigger first preview
     switchTemplate('classic');
     schedulePreview();
+    applyFulfillmentMode();
   </script>
 </body>
 </html>
