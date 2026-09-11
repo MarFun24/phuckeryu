@@ -677,6 +677,31 @@
     });
 
     /**
+     * Send the buyer to Stripe Checkout.
+     *
+     * This builder is embedded as an iframe on the Squarespace site, and Stripe
+     * Checkout refuses to be framed (X-Frame-Options: DENY). Navigating this
+     * frame would leave the buyer staring at a blocked panel, so break out and
+     * navigate the top window instead. The click handler gives us the user
+     * activation that top-level navigation requires.
+     */
+    function redirectToCheckout(url) {
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = url;
+          return;
+        }
+      } catch (frameError) {
+        // A sandboxed frame can refuse top navigation — open a new tab rather
+        // than trapping the buyer in a frame Stripe won't render.
+        window.open(url, '_blank', 'noopener');
+        return;
+      }
+
+      window.location.href = url;
+    }
+
+    /**
      * Collect the degree details, then hand off to Stripe Checkout — which is
      * what collects the shipping address and phone number for physical orders.
      */
@@ -726,7 +751,7 @@
           throw new Error(data.error || 'Failed to start checkout');
         }
 
-        window.location.assign(data.url);
+        redirectToCheckout(data.url);
       } catch (error) {
         console.error('Checkout session error:', error);
         alert(`We couldn't start checkout: ${error.message}. Please try again.`);

@@ -11,6 +11,14 @@ const PRINTED_PRICE_ID = 'price_1UEa8wPVCYNIQbDADaLMVkve';
 // Add 'US' here only once she confirms she wants cross-border orders.
 const ALLOWED_COUNTRIES = ['CA'];
 
+// The degree builder is served from Vercel and embedded as an iframe on the
+// Squarespace site, so the two origins are different and each URL needs the
+// right one:
+//   APP_ORIGIN  - where this app's pages actually live (success.html is here).
+//                 Pointing success_url at the Squarespace domain would 404.
+//   SITE_URL    - the public marketing site, where a buyer who cancels should
+//                 land, since Checkout takes over the whole top-level window.
+const APP_ORIGIN = process.env.APP_ORIGIN || 'https://phuckeryu.vercel.app';
 const SITE_URL = process.env.SITE_URL || 'https://www.phuckeryu.com';
 
 async function resolvePriceId() {
@@ -91,7 +99,7 @@ module.exports = async (req, res) => {
         style,
         buyerEmail,
       },
-      success_url: `${SITE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${APP_ORIGIN}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/`,
     });
 
